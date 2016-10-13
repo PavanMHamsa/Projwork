@@ -1,0 +1,46 @@
+## Read data
+
+Read the training data.
+
+Using `download.file` and `unzip` returns an error message:
+
+```{r, eval = FALSE}
+url <- "https://www.kaggle.com/c/allstate-claims-severity/download/train.csv.zip"
+f <- tempfile()
+download.file(url, f, mode = "wb")
+unzip(f, list = TRUE)
+```
+
+```
+Error in unzip(f, list = TRUE) : 
+  zip file 'C:\Users\chanb\AppData\Local\Temp\1\Rtmpohg9qM\filedb017386a2d' cannot be opened
+```
+
+So I'll workaround by saving the zip files manually to `../data/raw` and `unzip`ing from there.
+
+```{r}
+unzip("../data/raw/train.csv.zip", exdir = tempdir())
+train <- read_csv(file.path(tempdir(), "train.csv"))
+unzip("../data/raw/test.csv.zip", exdir = tempdir())
+test <- read_csv(file.path(tempdir(), "test.csv"))
+```
+
+List the columns in both data sets.
+
+```{r}
+merge(data.frame(col = names(train), inTrain = TRUE),
+      data.frame(col = names(test), inTest = TRUE),
+      by = "col", all = TRUE) %>%
+  filter(inTrain & inTest) %>%
+  .[, "col"]
+```
+
+Check that the columns in `train` are the same as in `test`.
+Show the columns that are not in both data sets.
+
+```{r}
+merge(data.frame(col = names(train), inTrain = TRUE),
+      data.frame(col = names(test), inTest = TRUE),
+      by = "col", all = TRUE) %>%
+  filter(is.na(inTrain) | is.na(inTest))
+```
