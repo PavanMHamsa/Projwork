@@ -1,0 +1,26 @@
+## Preamble
+
+Set working directory.
+
+```{r}
+setwd("~/Projects/Kaggle/AllstateClaimsSeverity/scripts")
+```
+
+Load libraries.
+
+```{r}
+library(readr)
+library(tibble)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(caret)
+```
+
+Reproducibility steps.
+
+```{r}
+library(checkpoint)
+checkpoint("2016-10-10", use.knitr = TRUE)
+sessionInfo()
+```
