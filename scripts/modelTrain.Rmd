@@ -1,0 +1,44 @@
+## Model the `train` data
+
+**Prototype with the `sample` data**
+
+Select a subset of non-near-zero variance variables.
+
+```{r}
+sample <-
+  select(sample, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
+  select(-matches("id"))
+```
+
+
+### Random forest
+
+Set the control parameters.
+
+```{r}
+ctrl <- trainControl(classProbs = TRUE,
+                     savePredictions = TRUE,
+                     allowParallel = TRUE)
+```
+
+Fit model over the tuning parameters.
+
+```{r}
+method <- "rf"
+system.time(trainingModel <- train(loss ~ ., data = sample, method = method))
+```
+
+Evaluate the model on the training dataset
+
+```{r}
+trainingModel
+hat <- predict(trainingModel, sample)
+confusionMatrix(hat, sample[, loss])
+```
+
+Display the final model
+
+```{r}
+varImp(trainingModel)
+trainingModel$finalModel
+```
