@@ -1,12 +1,10 @@
 ## Model the `train` data
 
-**Prototype with the `sample` data**
-
 Select a subset of non-near-zero variance variables.
 
 ```{r}
-sample <-
-  select(sample, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
+train <-
+  select(train, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
   select(-matches("id"))
 ```
 
@@ -26,8 +24,8 @@ Fit model over the tuning parameters.
 
 ```{r}
 trainingModel <- train(loss ~ .,
-                       data = sample,
                        method = "ctree",
+                       data = train,
                        trControl = ctrl)
 ```
 
@@ -36,7 +34,7 @@ Evaluate the model on the training dataset
 ```{r}
 trainingModel
 hat <-
-  sample %>%
+  train %>%
   transform(hat = predict(trainingModel, .)) %>%
   select(matches("loss|hat"))
 cor(hat[, c("loss", "hat")])
