@@ -1,5 +1,7 @@
 Sys.time0 <- Sys.time()
 
+setwd("scripts")
+
 sink("script.log")
 files <- c("preamble.Rmd",
            "readData.Rmd",

@@ -14,17 +14,17 @@ Set the control parameters.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = TRUE)
+                     allowParallel = FALSE)
 ```
 
 
-### Conditional inference tree
+### Regression tree
 
 Fit model over the tuning parameters.
 
 ```{r}
 trainingModel <- train(loss ~ .,
-                       method = "ctree",
+                       method = "rpart",
                        data = train,
                        trControl = ctrl)
 ```
