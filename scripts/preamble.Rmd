@@ -6,21 +6,24 @@ Set working directory.
 setwd("~/Projects/Kaggle/AllstateClaimsSeverity/scripts")
 ```
 
-Reproducibility steps.
-
-```{r}
-sessionInfo()
-set.seed(as.integer(as.Date("2016-10-10")))
-```
-
 Load libraries.
 
 ```{r}
 library(readr)
 library(tibble)
+library(plyr)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
 library(caret)
 library(gbm)
+library(parallel)
+library(doParallel)
+```
+
+Reproducibility steps.
+
+```{r}
+sessionInfo()
+set.seed(as.integer(as.Date("2016-10-10")))
 ```

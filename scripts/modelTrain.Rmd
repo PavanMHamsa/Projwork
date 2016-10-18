@@ -10,9 +10,12 @@ sample <-
   select(-matches("id"))
 ```
 
+Register clusters.
 Set the control parameters.
 
 ```{r}
+cl <- makeCluster(10)
+registerDoParallel(cl)
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
