@@ -32,6 +32,7 @@ trainingModel <- train(loss ~ .,
                        data = sample,
                        method = "gbm",
                        trControl = ctrl)
+stopCluster(cl)
 ```
 
 Evaluate the model on the training dataset.
