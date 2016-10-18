@@ -1,12 +1,10 @@
 ## Model the `train` data
 
-**Prototype with the `sample` data**
-
 Select a subset of non-near-zero variance variables.
 
 ```{r}
-sample <-
-  select(sample, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
+train <-
+  select(train, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
   select(-matches("id"))
 ```
 
@@ -29,7 +27,7 @@ Fit model over the tuning parameters.
 
 ```{r}
 trainingModel <- train(loss ~ .,
-                       data = sample,
+                       data = train,
                        method = "gbm",
                        trControl = ctrl)
 stopCluster(cl)
@@ -40,17 +38,18 @@ Evaluate the model on the training dataset.
 ```{r}
 trainingModel
 hat <-
-  sample %>%
+  train %>%
   transform(hat = predict(trainingModel, .)) %>%
   select(matches("loss|hat"))
 cor(hat[, c("loss", "hat")])
+postResample(hat$hat, hat$loss)
 ggplot(hat, aes(x = loss, y = hat)) +
   scale_x_log10() +
   scale_y_log10() +
   stat_density_2d(aes(fill = ..level..), geom = "polygon") +
   scale_fill_gradient("density", low = "blue", high = "white") +
   geom_abline(intercept = 0, slope = 1) +
-  labs(title = sprintf("Correlation = %.03g", cor(hat[, c("loss", "hat")])[1, 2])) +
+  labs(title = sprintf("R-square = %.03g, RMSE = %.01g", R2(hat$hat, hat$loss), RMSE(hat$hat, hat$loss)) +
   theme_bw()
 ```
 
