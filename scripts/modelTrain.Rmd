@@ -34,7 +34,7 @@ trainingModel <- train(loss ~ .,
                        trControl = ctrl)
 ```
 
-Evaluate the model on the training dataset
+Evaluate the model on the training dataset.
 
 ```{r}
 trainingModel
@@ -53,10 +53,15 @@ ggplot(hat, aes(x = loss, y = hat)) +
   theme_bw()
 ```
 
-Display the final model
-
+Display the final model.
 
 ```{r}
 varImp(trainingModel)
 trainingModel$finalModel
+```
+
+Save the artifacts to file.
+
+```{r}
+save(trainingModel, hat, file = "../data/processed/trainingModel.RData")
 ```
