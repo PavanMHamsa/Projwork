@@ -1,6 +1,7 @@
-Sys.time0 <- Sys.time()
+library(checkpoint)
+checkpoint("2016-10-01")
 
-setwd("scripts")
+Sys.time0 <- Sys.time()
 
 sink("script.log")
 files <- c("preamble.Rmd",
