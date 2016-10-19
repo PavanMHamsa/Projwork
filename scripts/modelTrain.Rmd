@@ -27,10 +27,15 @@ Fit model over the tuning parameters.
 ```{r}
 cl <- makeCluster(10)
 registerDoParallel(cl)
+grid <- expand.grid(interaction.depth = 3:5, 
+                    n.trees = c(250, 300, 350),
+                    shrinkage = 0.1,
+                    n.minobsinnode = 10)
 trainingModel <- train(loss ~ .,
                        data = sample,
                        method = "gbm",
-                       trControl = ctrl)
+                       trControl = ctrl,
+                       tuneGrid = grid)
 stopCluster(cl)
 ```
 
