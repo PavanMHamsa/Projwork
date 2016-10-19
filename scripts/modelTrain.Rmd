@@ -1,12 +1,10 @@
 ## Model the `train` data
 
-**Prototype with the `sample` data**
-
 Select a subset of non-near-zero variance variables.
 
 ```{r}
-sample <-
-  select(sample, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
+train <-
+  select(train, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
   select(-matches("id"))
 ```
 
@@ -27,12 +25,12 @@ Fit model over the tuning parameters.
 ```{r}
 cl <- makeCluster(10)
 registerDoParallel(cl)
-grid <- expand.grid(interaction.depth = 3:5, 
-                    n.trees = c(250, 300, 350),
+grid <- expand.grid(interaction.depth = 5:8, 
+                    n.trees = seq(350, 500, 50),
                     shrinkage = 0.1,
                     n.minobsinnode = 10)
 trainingModel <- train(loss ~ .,
-                       data = sample,
+                       data = train,
                        method = "gbm",
                        trControl = ctrl,
                        tuneGrid = grid)
@@ -44,7 +42,7 @@ Evaluate the model on the training dataset.
 ```{r}
 trainingModel
 hat <-
-  sample %>%
+  train %>%
   transform(hat = predict(trainingModel, .)) %>%
   select(matches("loss|hat"))
 cor(hat[, c("loss", "hat")])
