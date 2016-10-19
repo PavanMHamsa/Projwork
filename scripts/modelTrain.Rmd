@@ -8,12 +8,9 @@ train <-
   select(-matches("id"))
 ```
 
-Register clusters.
 Set the control parameters.
 
 ```{r}
-cl <- makeCluster(10)
-registerDoParallel(cl)
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
@@ -26,6 +23,8 @@ ctrl <- trainControl(method = "cv",
 Fit model over the tuning parameters.
 
 ```{r}
+cl <- makeCluster(10)
+registerDoParallel(cl)
 trainingModel <- train(loss ~ .,
                        data = train,
                        method = "gbm",
