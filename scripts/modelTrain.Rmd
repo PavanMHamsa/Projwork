@@ -1,10 +1,12 @@
-## Model the `train` data
+## Model the `train` train
 
+**Prototype with the `sample` data**
+ 
 Select a subset of non-near-zero variance variables.
 
 ```{r}
-train <-
-  select(train, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
+sample <-
+  select(sample, -matches(paste(nearzero$rowname, collapse = "|"))) %>%
   select(-matches("id"))
 ```
 
@@ -14,7 +16,7 @@ Set the control parameters.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = TRUE,
+                     allowParallel = FALSE,
                      summaryFunction = summaryMAE)
 ```
 
@@ -24,20 +26,20 @@ ctrl <- trainControl(method = "cv",
 Fit model over the tuning parameters.
 
 ```{r}
-cl <- makeCluster(10)
-registerDoParallel(cl)
-grid <- expand.grid(interaction.depth = 5:8, 
-                    n.trees = seq(350, 500, 50),
-                    shrinkage = 0.1,
-                    n.minobsinnode = 10)
+# cl <- makeCluster(10)
+# registerDoParallel(cl)
+# grid <- expand.grid(interaction.depth = 5:8, 
+#                     n.trees = seq(350, 500, 50),
+#                     shrinkage = 0.1,
+#                     n.minobsinnode = 10)
 trainingModel <- train(loss ~ .,
-                       data = train,
+                       data = sample,
                        method = "gbm",
                        trControl = ctrl,
-                       tuneGrid = grid,
+                       # tuneGrid = grid,
                        metric = "MAE",
                        maximize = FALSE)
-stopCluster(cl)
+# stopCluster(cl)
 ```
 
 Evaluate the model on the training dataset.
@@ -45,7 +47,7 @@ Evaluate the model on the training dataset.
 ```{r}
 trainingModel
 hat <-
-  train %>%
+  sample %>%
   transform(hat = predict(trainingModel, .)) %>%
   select(matches("loss|hat"))
 cor(hat[, c("loss", "hat")])
