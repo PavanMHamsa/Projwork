@@ -25,8 +25,8 @@ Fit model over the tuning parameters.
 ```{r}
 cl <- makeCluster(10)
 registerDoParallel(cl)
-grid <- expand.grid(interaction.depth = 3:5, 
-                    n.trees = c(250, 300, 350),
+grid <- expand.grid(interaction.depth = 5:8, 
+                    n.trees = seq(350, 500, 50),
                     shrinkage = 0.1,
                     n.minobsinnode = 10)
 trainingModel <- train(loss ~ .,
@@ -47,13 +47,17 @@ hat <-
   select(matches("loss|hat"))
 cor(hat[, c("loss", "hat")])
 postResample(hat$hat, hat$loss)
+mae(hat$hat, hat$loss)
 ggplot(hat, aes(x = loss, y = hat)) +
   scale_x_log10() +
   scale_y_log10() +
   stat_density_2d(aes(fill = ..level..), geom = "polygon") +
   scale_fill_gradient("density", low = "blue", high = "white") +
   geom_abline(intercept = 0, slope = 1) +
-  labs(title = sprintf("R-square = %g, RMSE = %g", R2(hat$hat, hat$loss), RMSE(hat$hat, hat$loss))) +
+  labs(title = sprintf("R-square = %g, RMSE = %g, MAE = %g",
+                       R2(hat$hat, hat$loss),
+                       RMSE(hat$hat, hat$loss),
+                       mae(hat$hat, hat$loss))) +
   theme_bw()
 ```
 
