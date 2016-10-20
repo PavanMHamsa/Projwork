@@ -14,7 +14,8 @@ Set the control parameters.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = TRUE)
+                     allowParallel = TRUE,
+                     summaryFunction = summaryMAE)
 ```
 
 
@@ -33,7 +34,9 @@ trainingModel <- train(loss ~ .,
                        data = train,
                        method = "gbm",
                        trControl = ctrl,
-                       tuneGrid = grid)
+                       tuneGrid = grid,
+                       metric = "MAE",
+                       maximize = FALSE)
 stopCluster(cl)
 ```
 
@@ -47,13 +50,17 @@ hat <-
   select(matches("loss|hat"))
 cor(hat[, c("loss", "hat")])
 postResample(hat$hat, hat$loss)
+mae(hat$hat, hat$loss)
 ggplot(hat, aes(x = loss, y = hat)) +
   scale_x_log10() +
   scale_y_log10() +
   stat_density_2d(aes(fill = ..level..), geom = "polygon") +
   scale_fill_gradient("density", low = "blue", high = "white") +
   geom_abline(intercept = 0, slope = 1) +
-  labs(title = sprintf("R-square = %g, RMSE = %g", R2(hat$hat, hat$loss), RMSE(hat$hat, hat$loss))) +
+  labs(title = sprintf("R-square = %g, RMSE = %g, MAE = %g",
+                       R2(hat$hat, hat$loss),
+                       RMSE(hat$hat, hat$loss),
+                       mae(hat$hat, hat$loss))) +
   theme_bw()
 ```
 
