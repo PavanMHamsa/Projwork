@@ -1,6 +1,8 @@
 library(checkpoint)
 checkpoint("2016-10-01")
 
+setwd("~/Projects/Kaggle/AllstateClaimsSeverity/scripts")
+
 Sys.time0 <- Sys.time()
 
 sink("script.log")
@@ -17,6 +19,7 @@ for (i in 1:length(files)) {
 close(f)
 library(knitr)
 library(rmarkdown)
+opts_chunk$set(fig.path = "../figures/")
 knit("master.Rmd", output = "index.md")
 file.remove("master.Rmd")
 sink()

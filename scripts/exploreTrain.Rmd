@@ -8,7 +8,7 @@ sample <- filter(train, id %in% sample(train$id, length(train$id) * 0.05))
 
 Plot the density of the `loss` variable.
 
-```{r}
+```{r densityLoss.png}
 summary(sample$loss)
 ggplot(sample, aes(x = loss)) +
   geom_density() +
@@ -18,7 +18,7 @@ ggplot(sample, aes(x = loss)) +
 
 Plot bivariate densities between `loss` and the `cont` variables.
 
-```{r}
+```{r densityMatrix}
 select(sample, matches("id|loss|cont")) %>%
   melt(id.vars = c("id", "loss")) %>%
   ggplot(aes(x = value, y = loss, group = variable)) +
