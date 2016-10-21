@@ -16,7 +16,7 @@ Set the control parameters.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = FALSE,
+                     allowParallel = TRUE,
                      summaryFunction = summaryMAE)
 ```
 
@@ -26,12 +26,13 @@ ctrl <- trainControl(method = "cv",
 Fit model over the tuning parameters.
 
 ```{r}
-# cl <- makeCluster(10)
-# registerDoParallel(cl)
+cl <- makeCluster(10)
+registerDoParallel(cl)
 # grid <- expand.grid(interaction.depth = 5:8, 
 #                     n.trees = seq(350, 500, 50),
 #                     shrinkage = 0.1,
 #                     n.minobsinnode = 10)
+sapply(list.files("../lib", full.names = TRUE), source)
 trainingModel <- train(loss ~ .,
                        data = sample,
                        method = "gbm",
@@ -39,7 +40,7 @@ trainingModel <- train(loss ~ .,
                        # tuneGrid = grid,
                        metric = "MAE",
                        maximize = FALSE)
-# stopCluster(cl)
+stopCluster(cl)
 ```
 
 Evaluate the model on the training dataset.
