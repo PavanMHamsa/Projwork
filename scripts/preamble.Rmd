@@ -31,5 +31,5 @@ set.seed(as.integer(as.Date("2016-10-10")))
 Source user-defined functions.
 
 ```{r}
-source("../lib/mae.R")
+sapply(list.files("../lib", full.names = TRUE), source)
 ```
