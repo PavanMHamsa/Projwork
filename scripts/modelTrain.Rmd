@@ -44,7 +44,7 @@ trainingModel <- train(loss ~ .,
 
 Evaluate the model on the training dataset.
 
-```{r}
+```{r densityTraining}
 trainingModel
 hat <-
   sample %>%
