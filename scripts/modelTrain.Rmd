@@ -26,8 +26,8 @@ Fit model over the tuning parameters.
 ```{r}
 cl <- makeCluster(10)
 registerDoParallel(cl)
-grid <- expand.grid(interaction.depth = 5:8, 
-                    n.trees = seq(350, 500, 50),
+grid <- expand.grid(interaction.depth = 7:10, 
+                    n.trees = seq(500, 800, 100),
                     shrinkage = 0.1,
                     n.minobsinnode = 10)
 sapply(list.files("../lib", full.names = TRUE), source)
