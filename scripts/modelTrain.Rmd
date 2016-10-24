@@ -1,4 +1,4 @@
-## Model the `train` train
+## Model the `train` data
 
 Select a subset of non-near-zero variance variables.
 
