@@ -13,12 +13,20 @@ Load libraries.
 ```r
 library(readr)
 library(tibble)
+library(plyr)
 library(dplyr)
 ```
 
 ```
 ## 
 ## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:plyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
 ```
 
 ```
@@ -44,130 +52,110 @@ library(caret)
 ```
 
 ```r
-library(rpart)
+library(gbm)
+```
+
+```
+## Loading required package: survival
+```
+
+```
+## 
+## Attaching package: 'survival'
+```
+
+```
+## The following object is masked from 'package:caret':
+## 
+##     cluster
+```
+
+```
+## Loading required package: splines
+```
+
+```
+## Loading required package: parallel
+```
+
+```
+## Loaded gbm 2.1.1
+```
+
+```r
+library(parallel)
+library(doParallel)
+```
+
+```
+## Loading required package: foreach
+```
+
+```
+## Loading required package: iterators
 ```
 
 Reproducibility steps.
 
 
 ```r
-library(checkpoint)
-```
-
-```
-## 
-## checkpoint: Part of the Reproducible R Toolkit from Microsoft
-## https://mran.microsoft.com/documents/rro/reproducibility/
-```
-
-```r
-checkpoint("2016-10-10", use.knitr = TRUE)
-```
-
-```
-## Scanning for packages used in this project
-```
-
-```
-## Warning in deps.R(tempfile): No file at path '/tmp/RtmpEhQD1x/
-## file282c114eb3838.Rmd'.
-```
-
-```
-## Warning in deps.R(tempfile): No file at path '/tmp/RtmpEhQD1x/
-## file282c14154976c.Rmd'.
-```
-
-```
-## Warning in deps.R(tempfile): No file at path '/tmp/RtmpEhQD1x/
-## file282c12e5a162c.Rmd'.
-```
-
-```
-## Warning in deps.R(tempfile): No file at path '/tmp/RtmpEhQD1x/
-## file282c142b77f42.Rmd'.
-```
-
-```
-## - Discovered 2 packages
-```
-
-```
-## Unable to parse 4 files:
-```
-
-```
-## - master.Rmd
-```
-
-```
-## - modelTrain.Rmd
-```
-
-```
-## - preamble.Rmd
-```
-
-```
-## - readData.Rmd
-```
-
-```
-## All detected packages already installed
-```
-
-```
-## checkpoint process complete
-```
-
-```
-## ---
-```
-
-```r
 sessionInfo()
 ```
 
 ```
-## R version 3.3.0 (2016-05-03)
+## R version 3.3.1 (2016-06-21)
 ## Platform: x86_64-redhat-linux-gnu (64-bit)
-## Running under: CentOS Linux 7 (Core)
+## Running under: CentOS release 6.8 (Final)
 ## 
 ## locale:
-##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
-##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
-##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
-##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-## [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+##  [1] LC_CTYPE=en_US.iso885915       LC_NUMERIC=C                  
+##  [3] LC_TIME=en_US.iso885915        LC_COLLATE=en_US.iso885915    
+##  [5] LC_MONETARY=en_US.iso885915    LC_MESSAGES=en_US.iso885915   
+##  [7] LC_PAPER=en_US.iso885915       LC_NAME=C                     
+##  [9] LC_ADDRESS=C                   LC_TELEPHONE=C                
+## [11] LC_MEASUREMENT=en_US.iso885915 LC_IDENTIFICATION=C           
 ## 
 ## attached base packages:
-## [1] stats     graphics  grDevices utils     datasets  base     
+## [1] parallel  splines   stats     graphics  grDevices utils     datasets 
+## [8] base     
 ## 
 ## other attached packages:
-##  [1] checkpoint_0.3.16 rpart_4.1-10      caret_6.0-70     
-##  [4] lattice_0.20-33   ggplot2_2.1.0     reshape2_1.4.1   
-##  [7] dplyr_0.5.0       tibble_1.1        readr_1.0.0      
-## [10] rmarkdown_0.9.6   knitr_1.13       
+##  [1] doParallel_1.0.10 iterators_1.0.8   foreach_1.4.3    
+##  [4] gbm_2.1.1         survival_2.39-5   caret_6.0-71     
+##  [7] lattice_0.20-34   ggplot2_2.1.0     reshape2_1.4.1   
+## [10] dplyr_0.5.0       plyr_1.8.4        tibble_1.2       
+## [13] readr_1.0.0       rmarkdown_1.0     knitr_1.14       
+## [16] checkpoint_0.3.16
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.12.5        formatR_1.4        nloptr_1.0.4      
-##  [4] plyr_1.8.4         methods_3.3.0      iterators_1.0.8   
-##  [7] tools_3.3.0        digest_0.6.9       lme4_1.1-12       
-## [10] evaluate_0.9       gtable_0.2.0       nlme_3.1-127      
-## [13] mgcv_1.8-12        Matrix_1.2-6       foreach_1.4.3     
-## [16] DBI_0.4-1          parallel_3.3.0     SparseM_1.7       
-## [19] stringr_1.0.0      MatrixModels_0.4-1 stats4_3.3.0      
-## [22] grid_3.3.0         nnet_7.3-12        R6_2.1.2          
-## [25] minqa_1.2.4        car_2.1-2          magrittr_1.5      
-## [28] scales_0.4.0       codetools_0.2-14   htmltools_0.3.5   
-## [31] MASS_7.3-45        splines_3.3.0      assertthat_0.1    
-## [34] pbkrtest_0.4-6     colorspace_1.2-6   quantreg_5.26     
-## [37] stringi_1.1.1      munsell_0.4.3
+##  [1] Rcpp_0.12.7        formatR_1.4        nloptr_1.0.4      
+##  [4] methods_3.3.1      tools_3.3.1        digest_0.6.10     
+##  [7] lme4_1.1-12        evaluate_0.9       gtable_0.2.0      
+## [10] nlme_3.1-128       mgcv_1.8-15        Matrix_1.2-7.1    
+## [13] DBI_0.5-1          SparseM_1.72       stringr_1.1.0     
+## [16] MatrixModels_0.4-1 stats4_3.3.1       grid_3.3.1        
+## [19] nnet_7.3-12        R6_2.1.3           minqa_1.2.4       
+## [22] car_2.1-3          magrittr_1.5       scales_0.4.0      
+## [25] codetools_0.2-14   htmltools_0.3.5    MASS_7.3-45       
+## [28] assertthat_0.1     pbkrtest_0.4-6     colorspace_1.2-6  
+## [31] quantreg_5.29      stringi_1.1.1      munsell_0.4.3
 ```
 
 ```r
 set.seed(as.integer(as.Date("2016-10-10")))
+```
+
+Source user-defined functions.
+
+
+```r
+sapply(list.files("../lib", full.names = TRUE), source)
+```
+
+```
+##         ../lib/mae.R ../lib/summaryMAE.R
+## value   ?            ?                  
+## visible FALSE        FALSE
 ```
 
 ---
@@ -329,7 +317,7 @@ ggplot(sample, aes(x = loss)) +
   theme_bw()
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+![plot of chunk densityLoss.png](../figures/densityLoss.png-1.png)
 
 Plot bivariate densities between `loss` and the `cont` variables.
 
@@ -345,7 +333,7 @@ select(sample, matches("id|loss|cont")) %>%
     theme_bw()
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
+![plot of chunk densityMatrix](../figures/densityMatrix-1.png)
 
 Show summary statistics for `cont` variables.
 
@@ -515,7 +503,8 @@ Set the control parameters.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = FALSE)
+                     allowParallel = TRUE,
+                     summaryFunction = summaryMAE)
 ```
 
 
@@ -525,18 +514,90 @@ Fit model over the tuning parameters.
 
 
 ```r
+cl <- makeCluster(10)
+registerDoParallel(cl)
+grid <- expand.grid(interaction.depth = 7:10, 
+                    n.trees = seq(500, 800, 100),
+                    shrinkage = 0.1,
+                    n.minobsinnode = 10)
+sapply(list.files("../lib", full.names = TRUE), source)
+```
+
+```
+##         ../lib/mae.R ../lib/summaryMAE.R
+## value   ?            ?                  
+## visible FALSE        FALSE
+```
+
+```r
 trainingModel <- train(loss ~ .,
-                       method = "rpart",
                        data = train,
-                       trControl = ctrl)
+                       method = "gbm",
+                       trControl = ctrl,
+                       tuneGrid = grid,
+                       metric = "MAE",
+                       maximize = FALSE)
 ```
 
 ```
-## Warning in nominalTrainWorkflow(x = x, y = y, wts = weights, info =
-## trainInfo, : There were missing values in resampled performance measures.
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1  7887939.5068            -nan     0.1000 545605.2519
+##      2  7440362.0607            -nan     0.1000 452884.8720
+##      3  7041230.7973            -nan     0.1000 369458.7312
+##      4  6721388.8661            -nan     0.1000 310703.4450
+##      5  6455230.8354            -nan     0.1000 258708.0305
+##      6  6225830.7394            -nan     0.1000 215031.0729
+##      7  6033240.4069            -nan     0.1000 180121.3237
+##      8  5859544.0318            -nan     0.1000 159465.2925
+##      9  5727130.0835            -nan     0.1000 130129.1907
+##     10  5602793.6548            -nan     0.1000 106961.0048
+##     20  4920311.3134            -nan     0.1000 41511.7888
+##     40  4389561.5397            -nan     0.1000 13062.8924
+##     60  4169663.4484            -nan     0.1000 8141.5143
+##     80  4058731.6042            -nan     0.1000  143.1159
+##    100  3985140.8347            -nan     0.1000 -846.0576
+##    120  3926631.8715            -nan     0.1000 1259.2105
+##    140  3882267.6753            -nan     0.1000 -505.2132
+##    160  3845057.5585            -nan     0.1000 -144.9847
+##    180  3808878.6029            -nan     0.1000 -1332.5689
+##    200  3781594.9269            -nan     0.1000 -1556.1169
+##    220  3759897.2516            -nan     0.1000  -29.5707
+##    240  3732850.3931            -nan     0.1000  366.7140
+##    260  3711264.2487            -nan     0.1000 -1152.3807
+##    280  3692096.7721            -nan     0.1000 -1011.9087
+##    300  3673931.6051            -nan     0.1000 -479.9451
+##    320  3657785.1825            -nan     0.1000 -877.4660
+##    340  3639921.5137            -nan     0.1000   71.9316
+##    360  3621861.5830            -nan     0.1000 -880.7226
+##    380  3607359.4185            -nan     0.1000 -285.9530
+##    400  3591234.3245            -nan     0.1000 -800.9812
+##    420  3576487.7328            -nan     0.1000 -1252.2143
+##    440  3563627.8492            -nan     0.1000 -1059.8092
+##    460  3550722.9157            -nan     0.1000 -106.0036
+##    480  3535137.6000            -nan     0.1000 -436.1002
+##    500  3523214.0869            -nan     0.1000 -645.0072
+##    520  3511489.6254            -nan     0.1000  -11.4830
+##    540  3496887.8055            -nan     0.1000 -1069.3784
+##    560  3484838.3091            -nan     0.1000 -870.8565
+##    580  3472249.6648            -nan     0.1000 -618.6348
+##    600  3460015.7624            -nan     0.1000 -474.4692
+##    620  3448796.1545            -nan     0.1000 -209.2002
+##    640  3436768.4111            -nan     0.1000 -186.4939
+##    660  3425446.9851            -nan     0.1000  326.0377
+##    680  3413693.7243            -nan     0.1000 -212.1120
+##    700  3402528.7235            -nan     0.1000 -476.0897
+##    720  3392630.4265            -nan     0.1000 -468.1713
+##    740  3382622.6667            -nan     0.1000 -238.3226
+##    760  3373739.2400            -nan     0.1000 -823.0952
+##    780  3365459.9022            -nan     0.1000 -769.6185
+##    800  3356188.5630            -nan     0.1000 -706.2587
 ```
 
-Evaluate the model on the training dataset
+```r
+stopCluster(cl)
+```
+
+Evaluate the model on the training dataset.
 
 
 ```r
@@ -544,7 +605,7 @@ trainingModel
 ```
 
 ```
-## CART 
+## Stochastic Gradient Boosting 
 ## 
 ## 188318 samples
 ##     69 predictor
@@ -554,13 +615,30 @@ trainingModel
 ## Summary of sample sizes: 169486, 169486, 169486, 169486, 169487, 169486, ... 
 ## Resampling results across tuning parameters:
 ## 
-##   cp          RMSE      Rsquared 
-##   0.01865163  2500.764  0.2591055
-##   0.02978615  2529.518  0.2410777
-##   0.22723323  2800.086  0.2175781
+##   interaction.depth  n.trees  MAE     
+##    7                 500      1271.627
+##    7                 600      1269.833
+##    7                 700      1268.058
+##    7                 800      1266.737
+##    8                 500      1268.483
+##    8                 600      1266.371
+##    8                 700      1265.450
+##    8                 800      1264.120
+##    9                 500      1266.091
+##    9                 600      1264.392
+##    9                 700      1263.303
+##    9                 800      1262.084
+##   10                 500      1265.126
+##   10                 600      1263.979
+##   10                 700      1262.839
+##   10                 800      1262.057
 ## 
-## RMSE was used to select the optimal model using  the smallest value.
-## The final value used for the model was cp = 0.01865163.
+## Tuning parameter 'shrinkage' was held constant at a value of 0.1
+## 
+## Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+## MAE was used to select the optimal model using  the smallest value.
+## The final values used for the model were n.trees = 800,
+##  interaction.depth = 10, shrinkage = 0.1 and n.minobsinnode = 10.
 ```
 
 ```r
@@ -573,8 +651,25 @@ cor(hat[, c("loss", "hat")])
 
 ```
 ##           loss       hat
-## loss 1.0000000 0.5069708
-## hat  0.5069708 1.0000000
+## loss 1.0000000 0.7764975
+## hat  0.7764975 1.0000000
+```
+
+```r
+postResample(hat$hat, hat$loss)
+```
+
+```
+##         RMSE     Rsquared 
+## 1831.9903283    0.6029484
+```
+
+```r
+mae(hat$hat, hat$loss)
+```
+
+```
+## [1] 1210.511
 ```
 
 ```r
@@ -584,19 +679,24 @@ ggplot(hat, aes(x = loss, y = hat)) +
   stat_density_2d(aes(fill = ..level..), geom = "polygon") +
   scale_fill_gradient("density", low = "blue", high = "white") +
   geom_abline(intercept = 0, slope = 1) +
-  labs(title = sprintf("Correlation = %.03g", cor(hat[, c("loss", "hat")])[1, 2])) +
+  labs(title = sprintf("R-square = %g, RMSE = %g, MAE = %g",
+                       R2(hat$hat, hat$loss),
+                       RMSE(hat$hat, hat$loss),
+                       mae(hat$hat, hat$loss))) +
   theme_bw()
 ```
 
 ```
-## Warning: Computation failed in `stat_density2d()`:
-## bandwidths must be strictly positive
+## Warning in self$trans$transform(x): NaNs produced
 ```
 
-![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png)
+```
+## Warning: Removed 16 rows containing non-finite values (stat_density2d).
+```
 
-Display the final model
+![plot of chunk densityTraining](../figures/densityTraining-1.png)
 
+Display the final model.
 
 
 ```r
@@ -604,31 +704,31 @@ varImp(trainingModel)
 ```
 
 ```
-## rpart variable importance
+## gbm variable importance
 ## 
 ##   only 20 most important variables shown (out of 945)
 ## 
-##          Overall
-## cat80B    100.00
-## cat80D     98.94
-## cat12B     63.72
-## cat87B     56.00
-## cat10B     35.04
-## cont2      28.20
-## cont12     19.49
-## cont7      18.81
-## cont11     18.68
-## cat116IG    0.00
-## cat116KA    0.00
-## cat116LE    0.00
-## cat112AP    0.00
-## cat116F     0.00
-## cat110T     0.00
-## cat103B     0.00
-## cat116LC    0.00
-## cat113C     0.00
-## cat116DX    0.00
-## cat110AV    0.00
+##         Overall
+## cat80B  100.000
+## cont7    73.134
+## cat80D   46.064
+## cont2    31.106
+## cat12B   20.868
+## cont12   14.283
+## cat81D   14.185
+## cat87B   13.575
+## cont14   11.005
+## cont11    9.974
+## cat10B    7.801
+## cat1B     5.676
+## cont3     5.597
+## cat53B    4.679
+## cat100G   4.252
+## cat100I   4.216
+## cat2B     3.690
+## cont8     3.496
+## cat13B    3.468
+## cont6     3.408
 ```
 
 ```r
@@ -636,14 +736,14 @@ trainingModel$finalModel
 ```
 
 ```
-## n= 188318 
-## 
-## node), split, n, deviance, yval
-##       * denotes terminal node
-## 
-## 1) root 188318 1.588212e+12 3037.338  
-##   2) cat80B< 0.5 141780 4.889489e+11 2244.215 *
-##   3) cat80B>=0.5 46538 7.383687e+11 5453.621  
-##     6) cont2< 0.455493 17575 1.174213e+11 4159.331 *
-##     7) cont2>=0.455493 28963 5.736407e+11 6239.008 *
+## A gradient boosted model with gaussian loss function.
+## 800 iterations were performed.
+## There were 945 predictors of which 379 had non-zero influence.
+```
+
+Save the artifacts to file.
+
+
+```r
+save(trainingModel, hat, file = "../data/processed/trainingModel.RData")
 ```

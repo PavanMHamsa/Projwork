@@ -1,0 +1,14 @@
+
+checkpoint: Part of the Reproducible R Toolkit from Microsoft
+https://mran.microsoft.com/documents/rro/reproducibility/
+Scanning for packages used in this project
+Loading required namespace: knitr
+- Discovered 13 packages
+All detected packages already installed
+checkpoint process complete
+---
+
+
+processing file: master.Rmd
+output file: index.md
+
