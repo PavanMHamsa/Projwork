@@ -19,7 +19,7 @@ ctrl <- trainControl(method = "cv",
 ```
 
 
-### Regression tree
+### Stochastic gradient boosting
 
 Fit model over the tuning parameters.
 
@@ -75,5 +75,5 @@ trainingModel$finalModel
 Save the artifacts to file.
 
 ```{r}
-save(trainingModel, hat, file = "../data/processed/trainingModel.RData")
+save(trainingModel, hat, file = "../data/processed/trainingModel_gbm.RData")
 ```
