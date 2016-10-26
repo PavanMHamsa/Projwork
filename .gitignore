@@ -16,4 +16,4 @@ vignettes/*.pdf
 .httr-oauth
 
 # Raw data file archives
-data/raw/*.zip
+data/*
