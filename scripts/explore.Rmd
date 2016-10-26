@@ -59,7 +59,7 @@ corr <-
 contHighCorr <- colnames(corr)[findCorrelation(corr)]
 sprintf("Remove variable due to high pair-wise correlation with other variables: %s",
         contHighCorr)
-replace(which(upper.tri(corr, diag = TRUE)), NA) %>%
+replace(corr, which(upper.tri(corr, diag = TRUE)), NA) %>%
   melt(na.rm = TRUE) %>%
   ggplot(aes(x = Var1, y = Var2, fill = value)) + 
     geom_tile(color = "white") +
