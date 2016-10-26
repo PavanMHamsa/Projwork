@@ -25,7 +25,7 @@ trainingModel <- train(loss ~ .,
                        data = train,
                        method = "gbm",
                        trControl = ctrl,
-                       tuneGrid = grid,
+                       # tuneGrid = grid,
                        metric = "MAE",
                        maximize = FALSE)
 stopCluster(cl)
