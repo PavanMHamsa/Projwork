@@ -1,4 +1,4 @@
-## Read data
+# Read data
 
 Read the training data.
 
@@ -20,9 +20,9 @@ So I'll workaround by saving the zip files manually to `../data/raw` and `unzip`
 
 ```{r}
 unzip("../data/raw/train.csv.zip", exdir = tempdir())
-train <- read_csv(file.path(tempdir(), "train.csv"), progress = FALSE)
+train <- read.csv(file.path(tempdir(), "train.csv"), stringsAsFactors = TRUE)
 unzip("../data/raw/test.csv.zip", exdir = tempdir())
-test <- read_csv(file.path(tempdir(), "test.csv"), progress = FALSE)
+test <- read.csv(file.path(tempdir(), "test.csv"), stringsAsFactors = TRUE)
 ```
 
 List the columns in both data sets.

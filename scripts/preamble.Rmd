@@ -1,4 +1,4 @@
-## Preamble
+# Preamble
 
 Set working directory.
 
@@ -9,8 +9,6 @@ setwd("~/Projects/Kaggle/AllstateClaimsSeverity/scripts")
 Load libraries.
 
 ```{r}
-library(readr)
-library(tibble)
 library(plyr)
 library(dplyr)
 library(reshape2)

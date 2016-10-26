@@ -1,0 +1,43 @@
+# Preprocess
+
+Preprocess the `train` and `test` data in parallel.
+
+```{r}
+cl <- makeCluster(2)
+registerDoParallel(cl)
+```
+
+Preprocessing steps
+
+1. Remove highly correlated continuous predictors
+2. Remove near-zero variance categorical predictors
+3. Create dummy indicator variables for remaining categorical predictors
+4. Remove dummy indicator variables corresponding to linear combinations
+
+```{r}
+L1 <- list(train, test)
+L2 <- foreach (i = 1:length(L1)) %dopar% {
+  library(magrittr)
+  library(dplyr)
+  library(caret)
+  L1[[i]] <-
+    select(L1[[i]], -matches(paste(contHighCorr, collapse = "|"))) %>%
+    select(-matches(paste(nearZero$rowname, collapse = "|"))) %>%
+    names() %>%
+    paste(collapse = " + ") %>%
+    paste("~ ", .) %>%
+    formula() %>%
+    dummyVars(data = L1[[i]], sep = "_") %>%
+    predict(newdata = L1[[i]]) %>%
+    data.frame() %>%
+    select(-matches(paste(catDummiesLinCom, collapse = "|")))
+}
+train <- L2[[1]]
+test <- L2[[2]]
+```
+
+Stop the clusters.
+
+```{r}
+stopCluster(cl)
+```

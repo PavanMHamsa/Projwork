@@ -1,0 +1,68 @@
+# Model on `train`
+
+Set the control parameters.
+Use the mean absolute error as the prediction metric.
+
+```{r}
+ctrl <- trainControl(method = "cv",
+                     number = 10,
+                     savePredictions = TRUE,
+                     allowParallel = TRUE,
+                     summaryFunction = summaryMAE)
+```
+
+Fit model over the tuning parameters.
+
+```{r}
+cl <- makeCluster(10)
+registerDoParallel(cl)
+grid <- expand.grid(interaction.depth = 7:10, 
+                    n.trees = seq(500, 800, 100),
+                    shrinkage = 0.1,
+                    n.minobsinnode = 10)
+sapply(list.files("../lib", full.names = TRUE), source)
+trainingModel <- train(loss ~ .,
+                       data = train,
+                       method = "gbm",
+                       trControl = ctrl,
+                       tuneGrid = grid,
+                       metric = "MAE",
+                       maximize = FALSE)
+stopCluster(cl)
+```
+
+Evaluate the model on the training dataset.
+
+```{r densityTraining}
+trainingModel
+hat <-
+  transform(hat = predict(trainingModel, train)) %>%
+  select(matches("loss|hat"))
+cor(hat[, c("loss", "hat")])
+postResample(hat$hat, hat$loss)
+mae(hat$hat, hat$loss)
+ggplot(hat, aes(x = loss, y = hat)) +
+  scale_x_log10() +
+  scale_y_log10() +
+  stat_density_2d(aes(fill = ..level..), geom = "polygon") +
+  scale_fill_gradient("density", low = "blue", high = "white") +
+  geom_abline(intercept = 0, slope = 1) +
+  labs(title = sprintf("R-square = %g, RMSE = %g, MAE = %g",
+                       R2(hat$hat, hat$loss),
+                       RMSE(hat$hat, hat$loss),
+                       mae(hat$hat, hat$loss))) +
+  theme_bw()
+```
+
+Display the final model.
+
+```{r}
+varImp(trainingModel)
+trainingModel$finalModel
+```
+
+Save the artifacts to file.
+
+```{r}
+save(trainingModel, hat, file = "../data/processed/trainingModel.RData")
+```

@@ -1,0 +1,168 @@
+# Explore sample
+
+Take a sample of the `train` data for exploration.
+
+```{r}
+sample <- filter(train, id %in% sample(train$id, length(train$id) * 0.05))
+nrow(sample)
+```
+
+Plot the density of the `loss` variable.
+
+```{r densityLossTrain}
+summary(sample$loss)
+ggplot(sample, aes(x = loss)) +
+  geom_density(color = NA, fill = "blue") +
+  scale_x_log10() +
+  theme_bw()
+```
+
+
+## Continuous predictors
+
+Plot bivariate densities between `loss` and the `cont` variables.
+Look for patterns or clusterings with `loss`.
+
+```{r densityMatrixLoss}
+select(sample, matches("loss|cont")) %>%
+  melt(id.vars = c("loss")) %>%
+  ggplot(aes(x = value, y = loss, group = variable)) +
+    scale_y_log10() +
+    stat_density_2d(aes(fill = ..level..), geom = "polygon") +
+    scale_fill_gradient("density", low = "blue", high = "white") +
+    facet_wrap(~ variable) +
+    theme_bw()
+```
+
+Show summary statistics for `cont` variables.
+
+```{r}
+select(sample, matches("cont")) %>% summary()
+```
+
+Show the standard deviations of the `cont` variables.
+
+```{r}
+select(sample, matches("cont")) %>% var() %>% diag() %>% sqrt()
+```
+
+The `cont` variables are pre-scaled with values between `r paste(select(sample, matches("cont")) %>% range(), collapse = ", ") %>% sprintf("(%s)")`.
+Therefore, no preprocessing is needed.
+
+Plot bivariate densities between `cont` variables.
+Look for correlations to reduce dimensionality of data.
+
+```{r heatmapCorrCont}
+corr <-
+  select(sample, matches("cont")) %>%
+  cor()
+contHighCorr <- colnames(corr)[findCorrelation(corr)]
+sprintf("Remove variable due to high pair-wise correlation with other variables: %s",
+        contHighCorr)
+replace(which(upper.tri(corr, diag = TRUE)), NA) %>%
+  melt(na.rm = TRUE) %>%
+  ggplot(aes(x = Var1, y = Var2, fill = value)) + 
+    geom_tile(color = "white") +
+    scale_fill_gradient2(low = "blue",
+                         high = "red",
+                         mid = "white",
+                         midpoint = 0,
+                         limit = c(-1, 1),
+                         space = "Lab",
+                         name="R") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          panel.grid.major = element_blank()) +
+    coord_fixed()
+round(corr, 2)
+```
+
+**Summary**
+
+It is obvious that there is not a near-zero variance issue with the continuous predictors.
+
+But there is a opportunity to reduce the dimensionality of the continuous predictors.
+Out of the
+`r ncol(select(sample, matches("cont")))` continuous variables,
+we can reduce the dimensionality by
+`r sprintf("%.0f%%", length(contHighCorr) / ncol(select(sample, matches("cont"))) * 100)`
+by eliminating highly correlated variables.
+
+
+## Categorical predictors
+
+Plot violin plots for `loss` and the `cat` variables.
+*This isn't going to work well; there are too many possible values.*
+
+```{r}
+select(sample, matches("cat")) %>%
+  melt(id.vars = NULL) %>%
+  select(matches("value")) %>%
+  unique() %>%
+  nrow()
+```
+
+Check for near-zero variance among the `cat` variables.
+Exclude these near-zero variances; they likely will not contribute much to prediction.
+*May revisit later.*
+
+```{r}
+nearZero <- 
+  select(sample, matches("cat")) %>%
+  nearZeroVar(saveMetrics = TRUE) %>%
+  transform(rowname = rownames(.)) %>%
+  filter(zeroVar | nzv)
+nearZero
+```
+
+Check how many unique values are in the remaining non-near-zero variance `cat` variables.
+*There are still too many possible values.*
+
+```{r}
+select(sample, -matches(paste(c(as.character(nearZero$rowname), "cont", "id", "loss"), collapse = "|"))) %>%
+  melt(id.vars = NULL) %>%
+  select(matches("value")) %>%
+  unique() %>%
+  nrow()
+```
+
+Find linear combinations of the remaining non-near-zero variance `cat` variables.
+
+```{r}
+sampleSubset <-
+  select(sample, -matches(paste(nearZero$rowname, collapse = "|"))) %>%
+  select(matches("cat"))
+fx <-
+  names(sampleSubset) %>%
+  paste(collapse = " + ") %>%
+  paste("~ ", .) %>%
+  formula()
+catDummies <- 
+  dummyVars(fx, data = sampleSubset, sep = "_") %>%
+  predict(newdata = sampleSubset)
+linCom <-
+  as.matrix(catDummies) %>%
+  findLinearCombos()
+catDummiesLinCom <-
+  data.frame(catDummies) %>%
+  names() %>%
+  .[linCom$remove]
+```
+
+**Summary**
+
+There is a opportunity to reduce the dimensionality of the categorical predictors by eliminating near-zero variance predictors.
+Out of the
+`r ncol(select(sample, matches("cat")))` categorical variables,
+we can reduce the dimensionality by
+`r sprintf("%.0f%%", length(nearZero$rowname) / ncol(select(sample, matches("cat"))) * 100)`
+by eliminating near-zero variance variables.
+
+We can reduce dimensionality further.
+Out of the
+`r data.frame(catDummies) %>% ncol()` non-near-zero variance categorical dummy indicator variables,
+we can reduce the dimensionality by
+`r sprintf("%.0f%%", length(catDummiesLinCom) / data.frame(catDummies) %>% ncol() * 100)`
+by eliminating linear combinations.
