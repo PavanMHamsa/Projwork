@@ -20,8 +20,7 @@ L2 <- foreach (i = 1:length(L1)) %dopar% {
   library(magrittr)
   library(dplyr)
   library(caret)
-  L1[[i]] <-
-    select(L1[[i]], -matches(paste(contHighCorr, collapse = "|"))) %>%
+  select(L1[[i]], -matches(paste(contHighCorr, collapse = "|"))) %>%
     select(-matches(paste(nearZero$rowname, collapse = "|"))) %>%
     names() %>%
     paste(collapse = " + ") %>%
@@ -40,4 +39,26 @@ Stop the clusters.
 
 ```{r}
 stopCluster(cl)
+```
+
+Check that the columns in `train` are the same as in `test`.
+Show the columns that are not in both data sets.
+*These are predictor values that are not in both data sets.*
+
+```{r}
+uncommon <-
+  merge(data.frame(col = names(train), inTrain = TRUE),
+        data.frame(col = names(test), inTest = TRUE),
+        by = "col", all = TRUE) %>%
+  filter((is.na(inTrain) | is.na(inTest)) & col != "loss")
+uncommon
+```
+
+Remove these predictors from both data sets.
+
+```{r}
+train <- select(train, -matches(paste(uncommon$col, collapse = "|")))
+test <- select(test, -matches(paste(uncommon$col, collapse = "|")))
+dim(train)
+dim(test)
 ```
