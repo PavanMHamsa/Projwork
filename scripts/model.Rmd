@@ -33,8 +33,12 @@ stopCluster(cl)
 
 Evaluate the model on the training dataset.
 
-```{r densityTraining}
+```{r tuningTraining}
 trainingModel
+ggplot(trainingModel)
+```
+
+```{r densityTraining}
 hat <-
   transform(hat = predict(trainingModel, train)) %>%
   select(matches("loss|hat"))
