@@ -8,7 +8,7 @@ setwd("~/Projects/Kaggle/AllstateClaimsSeverity/scripts")
 
 Load libraries.
 
-```{r}
+```{r, include = FALSE, messages = FALSE}
 library(plyr)
 library(dplyr)
 library(reshape2)

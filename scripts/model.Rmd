@@ -11,21 +11,31 @@ ctrl <- trainControl(method = "cv",
                      summaryFunction = summaryMAE)
 ```
 
+Set the model.
+
+```{r}
+method <- "gbm"
+```
+
+Set the tuning grid for model `r method`.
+
+```{r}
+grid <- expand.grid(interaction.depth = 3:5,
+                    n.trees = seq(50, 150, 50),
+                    shrinkage = 0.1,
+                    n.minobsinnode = 10)
+```
+
 Fit model over the tuning parameters.
 
 ```{r}
 cl <- makeCluster(10)
 registerDoParallel(cl)
-grid <- expand.grid(interaction.depth = 7:10, 
-                    n.trees = seq(500, 800, 100),
-                    shrinkage = 0.1,
-                    n.minobsinnode = 10)
-sapply(list.files("../lib", full.names = TRUE), source)
 trainingModel <- train(loss ~ .,
                        data = train,
-                       method = "gbm",
+                       method = method,
                        trControl = ctrl,
-                       # tuneGrid = grid,
+                       tuneGrid = grid,
                        metric = "MAE",
                        maximize = FALSE)
 stopCluster(cl)
@@ -40,6 +50,7 @@ ggplot(trainingModel)
 
 ```{r densityTraining}
 hat <-
+  train %>%
   transform(hat = predict(trainingModel, train)) %>%
   select(matches("loss|hat"))
 cor(hat[, c("loss", "hat")])
