@@ -24,4 +24,5 @@ Save the predictions to file.
 
 ```{r}
 write.csv(hat, file = "../data/processed/submission.csv", row.names = FALSE)
+file.info("../data/processed/submission.csv")
 ```
