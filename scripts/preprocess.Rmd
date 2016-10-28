@@ -1,5 +1,14 @@
 # Preprocess
 
+Take a sample of the `train` and `test` data for testing.
+
+```{r}
+train <- filter(train, id %in% sample(train$id, length(train$id) * 0.05))
+test <- filter(test, id %in% sample(test$id, length(test$id) * 0.05))
+dim(train)
+dim(test)
+```
+
 Preprocess the `train` and `test` data in parallel.
 
 ```{r}

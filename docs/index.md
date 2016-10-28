@@ -1,6 +1,6 @@
 ---
 title: "Kaggle: Allstate Claims Severity"
-date: "2016-10-27 13:30:08"
+date: "2016-10-28 10:21:48"
 author: Benjamin Chan (benjamin.ks.chan@gmail.com)
 output:
   html_document:
@@ -32,41 +32,40 @@ sessionInfo()
 
 ```
 ## R version 3.3.1 (2016-06-21)
-## Platform: x86_64-redhat-linux-gnu (64-bit)
-## Running under: CentOS release 6.8 (Final)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 7 x64 (build 7601) Service Pack 1
 ## 
 ## locale:
-##  [1] LC_CTYPE=en_US.iso885915       LC_NUMERIC=C                  
-##  [3] LC_TIME=en_US.iso885915        LC_COLLATE=en_US.iso885915    
-##  [5] LC_MONETARY=en_US.iso885915    LC_MESSAGES=en_US.iso885915   
-##  [7] LC_PAPER=en_US.iso885915       LC_NAME=C                     
-##  [9] LC_ADDRESS=C                   LC_TELEPHONE=C                
-## [11] LC_MEASUREMENT=en_US.iso885915 LC_IDENTIFICATION=C           
+## [1] LC_COLLATE=English_United States.1252 
+## [2] LC_CTYPE=English_United States.1252   
+## [3] LC_MONETARY=English_United States.1252
+## [4] LC_NUMERIC=C                          
+## [5] LC_TIME=English_United States.1252    
 ## 
 ## attached base packages:
-## [1] parallel  splines   stats     graphics  grDevices utils     datasets 
+## [1] parallel  stats     graphics  grDevices utils     datasets  methods  
 ## [8] base     
 ## 
 ## other attached packages:
-##  [1] doParallel_1.0.10 iterators_1.0.8   foreach_1.4.3    
-##  [4] gbm_2.1.1         survival_2.39-5   caret_6.0-71     
-##  [7] lattice_0.20-34   ggplot2_2.1.0     reshape2_1.4.1   
-## [10] dplyr_0.5.0       plyr_1.8.4        rmarkdown_1.0    
-## [13] knitr_1.14        checkpoint_0.3.16
+##  [1] doParallel_1.0.10   iterators_1.0.8     foreach_1.4.3      
+##  [4] reshape2_1.4.1      dplyr_0.5.0         plyr_1.8.4         
+##  [7] rmarkdown_1.0       knitr_1.14          xgboost_0.4-4      
+## [10] caret_6.0-71        ggplot2_2.1.0       lattice_0.20-33    
+## [13] Matrix_1.2-6        checkpoint_0.3.16   RevoUtilsMath_8.0.3
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.12.7        formatR_1.4        nloptr_1.0.4      
-##  [4] methods_3.3.1      tools_3.3.1        digest_0.6.10     
-##  [7] lme4_1.1-12        evaluate_0.9       tibble_1.2        
-## [10] gtable_0.2.0       nlme_3.1-128       mgcv_1.8-15       
-## [13] Matrix_1.2-7.1     DBI_0.5-1          SparseM_1.72      
-## [16] stringr_1.1.0      MatrixModels_0.4-1 stats4_3.3.1      
-## [19] grid_3.3.1         nnet_7.3-12        R6_2.1.3          
+##  [1] Rcpp_0.12.6        nloptr_1.0.4       formatR_1.4       
+##  [4] tools_3.3.1        digest_0.6.10      lme4_1.1-12       
+##  [7] tibble_1.2         evaluate_0.9       nlme_3.1-128      
+## [10] gtable_0.2.0       mgcv_1.8-12        DBI_0.5-1         
+## [13] SparseM_1.7        stringr_1.0.0      RevoUtils_10.0.1  
+## [16] MatrixModels_0.4-1 stats4_3.3.1       grid_3.3.1        
+## [19] nnet_7.3-12        data.table_1.9.6   R6_2.2.0          
 ## [22] minqa_1.2.4        car_2.1-3          magrittr_1.5      
-## [25] scales_0.4.0       codetools_0.2-14   htmltools_0.3.5   
-## [28] MASS_7.3-45        assertthat_0.1     pbkrtest_0.4-6    
-## [31] colorspace_1.2-6   quantreg_5.29      stringi_1.1.1     
-## [34] munsell_0.4.3
+## [25] htmltools_0.3.5    scales_0.4.0       codetools_0.2-14  
+## [28] MASS_7.3-45        splines_3.3.1      assertthat_0.1    
+## [31] pbkrtest_0.4-6     colorspace_1.2-6   quantreg_5.26     
+## [34] stringi_1.1.1      munsell_0.4.3      chron_2.3-47
 ```
 
 ```r
@@ -526,6 +525,27 @@ by eliminating linear combinations.
 
 # Preprocess
 
+Take a sample of the `train` and `test` data for testing.
+
+
+```r
+train <- filter(train, id %in% sample(train$id, length(train$id) * 0.05))
+test <- filter(test, id %in% sample(test$id, length(test$id) * 0.05))
+dim(train)
+```
+
+```
+## [1] 9415  132
+```
+
+```r
+dim(test)
+```
+
+```
+## [1] 6277  131
+```
+
 Preprocess the `train` and `test` data in parallel.
 
 
@@ -626,7 +646,7 @@ dim(train)
 ```
 
 ```
-## [1] 188318    474
+## [1] 9415  474
 ```
 
 ```r
@@ -634,7 +654,7 @@ dim(test)
 ```
 
 ```
-## [1] 125546    473
+## [1] 6277  473
 ```
 
 ---
@@ -649,66 +669,44 @@ Use the mean absolute error as the prediction metric.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = TRUE,
-                     summaryFunction = summaryMAE)
+                     allowParallel = FALSE)
+                     # allowParallel = TRUE,
+                     # summaryFunction = summaryMAE)
 ```
 
 Set the model.
 
 
 ```r
-method <- "gbm"
+method <- "xgbLinear"
+# method <- "xgbTree"
 ```
 
-Set the tuning grid for model gbm.
+Set the tuning grid for model xgbLinear.
 
 
 ```r
-grid <- expand.grid(interaction.depth = 3:5,
-                    n.trees = seq(50, 150, 50),
-                    shrinkage = 0.1,
-                    n.minobsinnode = 10)
+# grid <- expand.grid(interaction.depth = 3:5,
+#                     n.trees = seq(50, 150, 50),
+#                     shrinkage = 0.1,
+#                     n.minobsinnode = 10)
 ```
 
 Fit model over the tuning parameters.
 
 
 ```r
-cl <- makeCluster(10)
-registerDoParallel(cl)
+# cl <- makeCluster(10)
+# registerDoParallel(cl)
 trainingModel <- train(loss ~ .,
                        data = train,
                        method = method,
-                       trControl = ctrl,
-                       tuneGrid = grid,
-                       metric = "MAE",
-                       maximize = FALSE)
-```
-
-```
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1  7945640.0269            -nan     0.1000 482314.0805
-##      2  7545046.8138            -nan     0.1000 402342.5223
-##      3  7211933.4177            -nan     0.1000 328017.5925
-##      4  6933602.2386            -nan     0.1000 266404.0964
-##      5  6702871.6464            -nan     0.1000 227861.2267
-##      6  6500092.1714            -nan     0.1000 196878.3118
-##      7  6330339.5786            -nan     0.1000 168619.0660
-##      8  6195355.1120            -nan     0.1000 136035.0099
-##      9  6070431.2101            -nan     0.1000 124690.1338
-##     10  5963572.6978            -nan     0.1000 101805.9363
-##     20  5296324.8697            -nan     0.1000 38669.7523
-##     40  4715730.9440            -nan     0.1000 22502.8876
-##     60  4468669.4378            -nan     0.1000 7684.4094
-##     80  4329993.7615            -nan     0.1000 3423.3898
-##    100  4244655.9323            -nan     0.1000 2264.3168
-##    120  4189626.8431            -nan     0.1000 -923.7388
-##    140  4143708.9825            -nan     0.1000 -319.8392
-##    150  4120326.3026            -nan     0.1000 -793.0167
-```
-
-```r
-stopCluster(cl)
+                       trControl = ctrl)
+                       # trControl = ctrl,
+                       # tuneGrid = grid,
+                       # metric = "MAE",
+                       # maximize = FALSE)
+# stopCluster(cl)
 ```
 
 Evaluate the model on the training dataset.
@@ -719,33 +717,49 @@ trainingModel
 ```
 
 ```
-## Stochastic Gradient Boosting 
+## eXtreme Gradient Boosting 
 ## 
-## 188318 samples
-##    473 predictor
+## 9415 samples
+##  473 predictor
 ## 
 ## No pre-processing
 ## Resampling: Cross-Validated (10 fold) 
-## Summary of sample sizes: 169486, 169486, 169486, 169486, 169487, 169486, ... 
+## Summary of sample sizes: 8472, 8474, 8474, 8472, 8474, 8473, ... 
 ## Resampling results across tuning parameters:
 ## 
-##   interaction.depth  n.trees  MAE     
-##   3                   50      1421.848
-##   3                  100      1351.472
-##   3                  150      1327.494
-##   4                   50      1397.100
-##   4                  100      1334.146
-##   4                  150      1314.466
-##   5                   50      1379.696
-##   5                  100      1321.918
-##   5                  150      1305.821
+##   lambda  alpha  nrounds  RMSE      Rsquared 
+##   0e+00   0e+00   50      2170.082  0.4149864
+##   0e+00   0e+00  100      2199.262  0.4054420
+##   0e+00   0e+00  150      2217.139  0.3990024
+##   0e+00   1e-04   50      2170.082  0.4149864
+##   0e+00   1e-04  100      2199.262  0.4054421
+##   0e+00   1e-04  150      2217.139  0.3990024
+##   0e+00   1e-01   50      2168.130  0.4158369
+##   0e+00   1e-01  100      2196.059  0.4065007
+##   0e+00   1e-01  150      2211.382  0.4013854
+##   1e-04   0e+00   50      2176.948  0.4117148
+##   1e-04   0e+00  100      2205.529  0.4022851
+##   1e-04   0e+00  150      2222.410  0.3965060
+##   1e-04   1e-04   50      2176.948  0.4117149
+##   1e-04   1e-04  100      2205.529  0.4022852
+##   1e-04   1e-04  150      2222.410  0.3965060
+##   1e-04   1e-01   50      2185.360  0.4073388
+##   1e-04   1e-01  100      2212.710  0.3986611
+##   1e-04   1e-01  150      2233.345  0.3912686
+##   1e-01   0e+00   50      2155.769  0.4240394
+##   1e-01   0e+00  100      2183.540  0.4137412
+##   1e-01   0e+00  150      2204.096  0.4060838
+##   1e-01   1e-04   50      2155.769  0.4240394
+##   1e-01   1e-04  100      2183.540  0.4137412
+##   1e-01   1e-04  150      2204.096  0.4060838
+##   1e-01   1e-01   50      2156.115  0.4238565
+##   1e-01   1e-01  100      2182.257  0.4142302
+##   1e-01   1e-01  150      2206.898  0.4045629
 ## 
-## Tuning parameter 'shrinkage' was held constant at a value of 0.1
-## 
-## Tuning parameter 'n.minobsinnode' was held constant at a value of 10
-## MAE was used to select the optimal model using  the smallest value.
-## The final values used for the model were n.trees = 150,
-##  interaction.depth = 5, shrinkage = 0.1 and n.minobsinnode = 10.
+## Tuning parameter 'eta' was held constant at a value of 0.3
+## RMSE was used to select the optimal model using  the smallest value.
+## The final values used for the model were nrounds = 50, lambda = 0.1,
+##  alpha = 1e-04 and eta = 0.3.
 ```
 
 ```r
@@ -765,8 +779,8 @@ cor(hat[, c("loss", "hat")])
 
 ```
 ##           loss       hat
-## loss 1.0000000 0.7164767
-## hat  0.7164767 1.0000000
+## loss 1.0000000 0.8969085
+## hat  0.8969085 1.0000000
 ```
 
 ```r
@@ -775,7 +789,7 @@ postResample(hat$hat, hat$loss)
 
 ```
 ##         RMSE     Rsquared 
-## 2029.8586903    0.5133389
+## 1272.5208356    0.8044448
 ```
 
 ```r
@@ -783,7 +797,7 @@ mae(hat$hat, hat$loss)
 ```
 
 ```
-## [1] 1298.343
+## [1] 918.4198
 ```
 
 ```r
@@ -800,14 +814,6 @@ ggplot(hat, aes(x = loss, y = hat)) +
   theme_bw()
 ```
 
-```
-## Warning in self$trans$transform(x): NaNs produced
-```
-
-```
-## Warning: Removed 2 rows containing non-finite values (stat_density2d).
-```
-
 ![plot of chunk densityTraining](../figures/densityTraining-1.png)
 
 Display the final model.
@@ -818,31 +824,31 @@ varImp(trainingModel)
 ```
 
 ```
-## gbm variable importance
+## xgbLinear variable importance
 ## 
-##   only 20 most important variables shown (out of 473)
+##   only 20 most important variables shown (out of 279)
 ## 
 ##          Overall
 ## cat80_B  100.000
-## cont7     40.820
-## cont2     19.516
-## cat12_A   16.037
-## cat87_B   14.494
-## cat81_B    7.266
-## cont11     7.200
-## cat10_A    4.245
-## cont14     3.514
-## cat53_A    3.403
-## cat100_I   2.824
-## cat100_G   2.647
-## cat1_A     2.538
-## cat81_C    2.528
-## cont3      2.312
-## cat11_A    2.119
-## cat4_A     2.094
-## cat44_A    2.076
-## cat38_A    2.036
-## cat13_A    1.792
+## cont7     22.048
+## cont2     18.440
+## cat12_A   14.298
+## cont11     9.393
+## cont14     8.718
+## id         7.453
+## cat81_B    6.027
+## cat87_B    5.784
+## cont6      4.790
+## cont3      4.450
+## cat1_A     4.189
+## cont1      4.123
+## cat53_A    3.748
+## cat100_I   3.442
+## cat100_G   3.091
+## cont5      3.049
+## cat5_A     2.959
+## cat23_A    2.939
+## cont10     2.913
 ```
 
 ```r
@@ -850,9 +856,167 @@ trainingModel$finalModel
 ```
 
 ```
-## A gradient boosted model with gaussian loss function.
-## 150 iterations were performed.
-## There were 473 predictors of which 99 had non-zero influence.
+## $handle
+## <pointer: 0x000000000271df40>
+## attr(,"class")
+## [1] "xgb.Booster.handle"
+## 
+## $raw
+##    [1] 00 00 00 3f d9 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##   [24] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##   [47] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##   [70] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##   [93] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [116] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0a 00
+##  [139] 00 00 00 00 00 00 72 65 67 3a 6c 69 6e 65 61 72 06 00 00 00 00 00 00
+##  [162] 00 67 62 74 72 65 65 32 00 00 00 00 00 00 00 d9 01 00 00 00 00 00 00
+##  [185] 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [208] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [231] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [254] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [277] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [300] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [323] 00 00 00 00 00 00 01 00 00 00 6f 00 00 00 00 00 00 00 00 00 00 00 d9
+##  [346] 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [369] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [392] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [415] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [438] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+##  [461] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff ff ff 01 00 00
+##  [484] 00 02 00 00 00 19 00 00 80 00 00 28 b7 00 00 00 80 03 00 00 00 04 00
+##  [507] 00 00 0c 00 00 80 00 00 28 b7 00 00 00 00 05 00 00 00 06 00 00 00 ce
+##  [530] 01 00 80 61 36 e9 3e 01 00 00 80 07 00 00 00 08 00 00 00 d3 01 00 80
+##  [553] a3 5a 26 3f 01 00 00 00 09 00 00 00 0a 00 00 00 1b 00 00 80 00 00 28
+##  [576] b7 02 00 00 80 0b 00 00 00 0c 00 00 00 d6 01 00 80 b6 a3 42 3f 02 00
+##  [599] 00 00 0d 00 00 00 0e 00 00 00 0c 00 00 80 00 00 28 b7 03 00 00 80 0f
+##  [622] 00 00 00 10 00 00 00 ce 01 00 80 e6 cf c7 3e 03 00 00 00 11 00 00 00
+##  [645] 12 00 00 00 00 00 00 80 a0 9a f5 48 04 00 00 80 13 00 00 00 14 00 00
+##  [668] 00 01 00 00 80 00 00 28 b7 04 00 00 00 15 00 00 00 16 00 00 00 d2 01
+##  [691] 00 80 ae 12 78 3f 05 00 00 80 17 00 00 00 18 00 00 00 0c 00 00 80 00
+##  [714] 00 28 b7 05 00 00 00 19 00 00 00 1a 00 00 00 44 00 00 80 00 00 28 b7
+##  [737] 06 00 00 80 1b 00 00 00 1c 00 00 00 d3 01 00 80 8f e1 cd 3e 06 00 00
+##  [760] 00 1d 00 00 00 1e 00 00 00 d3 01 00 80 73 f5 59 3f 07 00 00 80 1f 00
+##  [783] 00 00 20 00 00 00 75 00 00 80 00 00 28 b7 07 00 00 00 21 00 00 00 22
+##  [806] 00 00 00 60 00 00 80 00 00 28 b7 08 00 00 80 23 00 00 00 24 00 00 00
+##  [829] 64 00 00 80 00 00 28 b7 08 00 00 00 25 00 00 00 26 00 00 00 d6 01 00
+##  [852] 80 8c 15 39 3f 09 00 00 80 27 00 00 00 28 00 00 00 d3 01 00 80 d1 e9
+##  [875] 7f 3f 09 00 00 00 29 00 00 00 2a 00 00 00 17 00 00 80 00 00 28 b7 0a
+##  [898] 00 00 80 2b 00 00 00 2c 00 00 00 01 00 00 80 00 00 28 b7 0a 00 00 00
+##  [921] 2d 00 00 00 2e 00 00 00 00 00 00 80 c0 c5 2e 48 0b 00 00 80 2f 00 00
+##  [944] 00 30 00 00 00 e9 00 00 80 00 00 28 b7 0b 00 00 00 31 00 00 00 32 00
+##  [967] 00 00 40 00 00 80 00 00 28 b7 0c 00 00 80 33 00 00 00 34 00 00 00 5e
+##  [990] 00 00 80 00 00 28 b7 0c 00 00 00
+##  [ reached getOption("max.print") -- omitted 154600 entries ]
+## 
+## $xNames
+##   [1] "id"        "cat1_A"    "cat1_B"    "cat2_A"    "cat3_A"   
+##   [6] "cat4_A"    "cat5_A"    "cat6_A"    "cat8_A"    "cat9_A"   
+##  [11] "cat10_A"   "cat11_A"   "cat12_A"   "cat13_A"   "cat23_A"  
+##  [16] "cat25_A"   "cat26_A"   "cat27_A"   "cat36_A"   "cat37_A"  
+##  [21] "cat38_A"   "cat44_A"   "cat50_A"   "cat53_A"   "cat80_A"  
+##  [26] "cat80_B"   "cat80_C"   "cat81_B"   "cat81_C"   "cat82_A"  
+##  [31] "cat82_B"   "cat82_C"   "cat83_A"   "cat83_B"   "cat83_C"  
+##  [36] "cat84_A"   "cat84_B"   "cat84_C"   "cat86_A"   "cat86_B"  
+##  [41] "cat86_C"   "cat87_B"   "cat87_C"   "cat88_A"   "cat88_D"  
+##  [46] "cat90_B"   "cat90_C"   "cat90_D"   "cat90_E"   "cat91_A"  
+##  [51] "cat91_B"   "cat91_C"   "cat91_D"   "cat91_E"   "cat91_F"  
+##  [56] "cat91_G"   "cat92_A"   "cat92_B"   "cat92_C"   "cat93_A"  
+##  [61] "cat93_B"   "cat93_C"   "cat93_D"   "cat94_A"   "cat94_B"  
+##  [66] "cat94_C"   "cat94_D"   "cat94_E"   "cat95_A"   "cat95_B"  
+##  [71] "cat95_C"   "cat95_D"   "cat97_A"   "cat97_B"   "cat97_C"  
+##  [76] "cat97_D"   "cat97_E"   "cat97_F"   "cat98_A"   "cat98_B"  
+##  [81] "cat98_C"   "cat99_C"   "cat99_D"   "cat99_E"   "cat99_H"  
+##  [86] "cat99_I"   "cat99_K"   "cat99_N"   "cat99_P"   "cat100_A" 
+##  [91] "cat100_B"  "cat100_C"  "cat100_D"  "cat100_F"  "cat100_G" 
+##  [96] "cat100_H"  "cat100_I"  "cat100_J"  "cat100_K"  "cat100_L" 
+## [101] "cat100_M"  "cat100_N"  "cat101_C"  "cat101_D"  "cat101_F" 
+## [106] "cat101_G"  "cat101_I"  "cat101_J"  "cat101_L"  "cat101_M" 
+## [111] "cat101_O"  "cat101_Q"  "cat101_R"  "cat103_B"  "cat103_C" 
+## [116] "cat103_D"  "cat103_E"  "cat103_F"  "cat103_G"  "cat103_H" 
+## [121] "cat103_I"  "cat103_J"  "cat104_A"  "cat104_C"  "cat104_D" 
+## [126] "cat104_E"  "cat104_F"  "cat104_G"  "cat104_H"  "cat104_I" 
+## [131] "cat104_J"  "cat104_K"  "cat104_L"  "cat104_M"  "cat104_N" 
+## [136] "cat104_O"  "cat105_A"  "cat105_B"  "cat105_C"  "cat105_D" 
+## [141] "cat105_E"  "cat105_F"  "cat105_G"  "cat105_H"  "cat105_I" 
+## [146] "cat105_J"  "cat105_K"  "cat105_L"  "cat105_M"  "cat105_N" 
+## [151] "cat106_C"  "cat106_D"  "cat106_E"  "cat106_F"  "cat106_G" 
+## [156] "cat106_H"  "cat106_I"  "cat106_J"  "cat106_K"  "cat106_L" 
+## [161] "cat106_M"  "cat106_N"  "cat107_C"  "cat107_D"  "cat107_E" 
+## [166] "cat107_F"  "cat107_G"  "cat107_H"  "cat107_I"  "cat107_J" 
+## [171] "cat107_K"  "cat107_L"  "cat107_M"  "cat107_N"  "cat107_O" 
+## [176] "cat107_P"  "cat108_A"  "cat108_B"  "cat108_C"  "cat108_D" 
+## [181] "cat108_E"  "cat108_H"  "cat108_I"  "cat109_A"  "cat109_AB"
+## [186] "cat109_AE" "cat109_AH" "cat109_AI" "cat109_AJ" "cat109_AL"
+## [191] "cat109_AM" "cat109_AN" "cat109_AQ" "cat109_AR" "cat109_AS"
+## [196] "cat109_AT" "cat109_AU" "cat109_AW" "cat109_AX" "cat109_AY"
+## [201] "cat109_C"  "cat109_CA" "cat109_CC" "cat109_CD" "cat109_CI"
+## [206] "cat109_CK" "cat109_CL" "cat109_D"  "cat109_F"  "cat109_G" 
+## [211] "cat109_H"  "cat109_I"  "cat109_K"  "cat109_L"  "cat109_M" 
+## [216] "cat109_N"  "cat109_O"  "cat109_Q"  "cat109_R"  "cat109_S" 
+## [221] "cat109_T"  "cat109_U"  "cat110_A"  "cat110_AA" "cat110_AB"
+## [226] "cat110_AC" "cat110_AD" "cat110_AE" "cat110_AH" "cat110_AI"
+## [231] "cat110_AJ" "cat110_AK" "cat110_AL" "cat110_AM" "cat110_AP"
+## [236] "cat110_AR" "cat110_AT" "cat110_AU" "cat110_AW" "cat110_AX"
+## [241] "cat110_AY" "cat110_B"  "cat110_BA" "cat110_BC" "cat110_BE"
+## [246] "cat110_BF" "cat110_BG" "cat110_BO" "cat110_BP" "cat110_BQ"
+## [251] "cat110_BR" "cat110_BS" "cat110_BT" "cat110_BW" "cat110_BY"
+## [256] "cat110_C"  "cat110_CF" "cat110_CG" "cat110_CH" "cat110_CI"
+## [261] "cat110_CJ" "cat110_CK" "cat110_CL" "cat110_CM" "cat110_CN"
+## [266] "cat110_CO" "cat110_CP" "cat110_CQ" "cat110_CR" "cat110_CS"
+## [271] "cat110_CU" "cat110_CV" "cat110_CX" "cat110_D"  "cat110_DA"
+## [276] "cat110_DB" "cat110_DC" "cat110_DD" "cat110_DE" "cat110_DF"
+## [281] "cat110_DH" "cat110_DI" "cat110_DJ" "cat110_DK" "cat110_DL"
+## [286] "cat110_DM" "cat110_DO" "cat110_DP" "cat110_DR" "cat110_DS"
+## [291] "cat110_DU" "cat110_DW" "cat110_DX" "cat110_E"  "cat110_EA"
+## [296] "cat110_EB" "cat110_ED" "cat110_EE" "cat110_EF" "cat110_EG"
+## [301] "cat110_EL" "cat110_G"  "cat110_I"  "cat110_J"  "cat110_K" 
+## [306] "cat110_L"  "cat110_N"  "cat110_O"  "cat110_P"  "cat110_R" 
+## [311] "cat110_T"  "cat110_U"  "cat110_V"  "cat110_W"  "cat110_X" 
+## [316] "cat111_C"  "cat111_E"  "cat111_G"  "cat111_I"  "cat111_K" 
+## [321] "cat111_M"  "cat111_O"  "cat111_Q"  "cat111_S"  "cat112_A" 
+## [326] "cat112_AA" "cat112_AB" "cat112_AC" "cat112_AD" "cat112_AE"
+## [331] "cat112_AF" "cat112_AG" "cat112_AH" "cat112_AI" "cat112_AJ"
+## [336] "cat112_AK" "cat112_AL" "cat112_AM" "cat112_AN" "cat112_AO"
+## [341] "cat112_AP" "cat112_AR" "cat112_AS" "cat112_AT" "cat112_AU"
+## [346] "cat112_AV" "cat112_AW" "cat112_AX" "cat112_AY" "cat112_B" 
+## [351] "cat112_BA" "cat112_C"  "cat112_D"  "cat112_E"  "cat112_F" 
+## [356] "cat112_G"  "cat112_H"  "cat112_I"  "cat112_J"  "cat112_K" 
+## [361] "cat112_L"  "cat112_M"  "cat112_N"  "cat112_O"  "cat112_P" 
+## [366] "cat112_Q"  "cat112_R"  "cat112_S"  "cat112_T"  "cat112_U" 
+## [371] "cat112_V"  "cat112_W"  "cat112_X"  "cat113_A"  "cat113_AB"
+## [376] "cat113_AD" "cat113_AE" "cat113_AF" "cat113_AG" "cat113_AH"
+## [381] "cat113_AI" "cat113_AJ" "cat113_AK" "cat113_AM" "cat113_AN"
+## [386] "cat113_AO" "cat113_AP" "cat113_AS" "cat113_AT" "cat113_AU"
+## [391] "cat113_AV" "cat113_AW" "cat113_AX" "cat113_AY" "cat113_C" 
+## [396] "cat113_E"  "cat113_F"  "cat113_G"  "cat113_H"  "cat113_I" 
+## [401] "cat113_J"  "cat113_K"  "cat113_L"  "cat113_M"  "cat113_N" 
+## [406] "cat113_Q"  "cat113_S"  "cat113_U"  "cat113_X"  "cat114_C" 
+## [411] "cat114_E"  "cat114_F"  "cat114_I"  "cat114_J"  "cat114_L" 
+## [416] "cat114_N"  "cat114_O"  "cat114_Q"  "cat114_R"  "cat114_U" 
+## [421] "cat114_V"  "cat115_F"  "cat115_G"  "cat115_H"  "cat115_I" 
+## [426] "cat115_J"  "cat115_K"  "cat115_L"  "cat115_M"  "cat115_N" 
+## [431] "cat115_O"  "cat115_P"  "cat115_Q"  "cat115_R"  "cat115_S" 
+## [436] "cat115_T"  "cat116_B"  "cat116_BD" "cat116_BK" "cat116_BO"
+## [441] "cat116_BP" "cat116_BS" "cat116_BV" "cat116_BX" "cat116_BY"
+## [446] "cat116_E"  "cat116_EA" "cat116_EB" "cat116_EC" "cat116_ED"
+## [451] "cat116_EE" "cat116_EF" "cat116_EG" "cat116_EH" "cat116_EI"
+## [456] "cat116_EL" "cat116_EN" "cat116_EO" "cat116_EP" "cat116_EY"
+## [461] "cat116_O"  "cont1"     "cont2"     "cont3"     "cont4"    
+## [466] "cont5"     "cont6"     "cont7"     "cont8"     "cont10"   
+## [471] "cont11"    "cont13"    "cont14"   
+## 
+## $problemType
+## [1] "Regression"
+## 
+## $tuneValue
+##    nrounds lambda alpha eta
+## 22      50    0.1 1e-04 0.3
+## 
+## $obsLevels
+## [1] NA
+## 
+## attr(,"class")
+## [1] "xgb.Booster"
 ```
 
 Save the artifacts to file.
@@ -878,9 +1042,9 @@ str(hat)
 ```
 
 ```
-## 'data.frame':	125546 obs. of  2 variables:
-##  $ id  : num  4 6 9 12 15 17 21 28 32 43 ...
-##  $ loss: num  1657 2194 8245 6057 1081 ...
+## 'data.frame':	6277 obs. of  2 variables:
+##  $ id  : num  361 407 455 467 532 581 664 690 758 850 ...
+##  $ loss: num  3069 7673 2338 1715 2871 ...
 ```
 
 ```r
@@ -888,13 +1052,13 @@ head(hat)
 ```
 
 ```
-##   id     loss
-## 1  4 1656.566
-## 2  6 2193.858
-## 3  9 8244.872
-## 4 12 6057.080
-## 5 15 1081.191
-## 6 17 2520.387
+##    id     loss
+## 1 361 3069.069
+## 2 407 7672.882
+## 3 455 2337.791
+## 4 467 1715.355
+## 5 532 2871.474
+## 6 581 3321.212
 ```
 
 Plot the density of the predicted `loss` variable.
@@ -905,8 +1069,8 @@ summary(hat$loss)
 ```
 
 ```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   -2460    1721    2448    3029    3790   59640
+##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##    52.45  1625.00  2400.00  3034.00  3835.00 32960.00
 ```
 
 ```r
@@ -914,14 +1078,6 @@ ggplot(hat, aes(x = loss)) +
   geom_density(color = NA, fill = "blue") +
   scale_x_log10() +
   theme_bw()
-```
-
-```
-## Warning in self$trans$transform(x): NaNs produced
-```
-
-```
-## Warning: Removed 2 rows containing non-finite values (stat_density).
 ```
 
 ![plot of chunk densityLossTest](../figures/densityLossTest-1.png)
@@ -935,10 +1091,10 @@ file.info("../data/processed/submission.csv")
 ```
 
 ```
-##                                     size isdir mode               mtime
-## ../data/processed/submission.csv 2975242 FALSE  644 2016-10-27 15:03:28
+##                                    size isdir mode               mtime
+## ../data/processed/submission.csv 152395 FALSE  666 2016-10-28 10:34:44
 ##                                                ctime               atime
-## ../data/processed/submission.csv 2016-10-27 15:03:28 2016-10-26 18:31:45
-##                                   uid  gid uname   grname
-## ../data/processed/submission.csv 4051 3010 chanb HPCUsers
+## ../data/processed/submission.csv 2016-10-27 15:16:18 2016-10-27 15:32:38
+##                                  exe
+## ../data/processed/submission.csv  no
 ```

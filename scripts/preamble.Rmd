@@ -14,7 +14,7 @@ library(dplyr)
 library(reshape2)
 library(ggplot2)
 library(caret)
-library(gbm)
+library(xgboost)
 library(parallel)
 library(doParallel)
 ```
