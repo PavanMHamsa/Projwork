@@ -7,9 +7,9 @@ Use the mean absolute error as the prediction metric.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = FALSE)
+                     allowParallel = FALSE,
                      # allowParallel = TRUE,
-                     # summaryFunction = summaryMAE)
+                     summaryFunction = summaryMAE)
 ```
 
 Set the model.
@@ -36,11 +36,11 @@ Fit model over the tuning parameters.
 trainingModel <- train(loss ~ .,
                        data = train,
                        method = method,
-                       trControl = ctrl)
-                       # trControl = ctrl,
+                       # trControl = ctrl)
+                       trControl = ctrl,
                        # tuneGrid = grid,
-                       # metric = "MAE",
-                       # maximize = FALSE)
+                       metric = "MAE",
+                       maximize = FALSE)
 # stopCluster(cl)
 ```
 

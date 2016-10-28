@@ -1,6 +1,6 @@
 ---
 title: "Kaggle: Allstate Claims Severity"
-date: "2016-10-28 10:21:48"
+date: "2016-10-28 11:13:39"
 author: Benjamin Chan (benjamin.ks.chan@gmail.com)
 output:
   html_document:
@@ -54,18 +54,19 @@ sessionInfo()
 ## [13] Matrix_1.2-6        checkpoint_0.3.16   RevoUtilsMath_8.0.3
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.12.6        nloptr_1.0.4       formatR_1.4       
-##  [4] tools_3.3.1        digest_0.6.10      lme4_1.1-12       
-##  [7] tibble_1.2         evaluate_0.9       nlme_3.1-128      
-## [10] gtable_0.2.0       mgcv_1.8-12        DBI_0.5-1         
-## [13] SparseM_1.7        stringr_1.0.0      RevoUtils_10.0.1  
-## [16] MatrixModels_0.4-1 stats4_3.3.1       grid_3.3.1        
-## [19] nnet_7.3-12        data.table_1.9.6   R6_2.2.0          
-## [22] minqa_1.2.4        car_2.1-3          magrittr_1.5      
-## [25] htmltools_0.3.5    scales_0.4.0       codetools_0.2-14  
-## [28] MASS_7.3-45        splines_3.3.1      assertthat_0.1    
-## [31] pbkrtest_0.4-6     colorspace_1.2-6   quantreg_5.26     
-## [34] stringi_1.1.1      munsell_0.4.3      chron_2.3-47
+##  [1] Rcpp_0.12.6        compiler_3.3.1     nloptr_1.0.4      
+##  [4] formatR_1.4        tools_3.3.1        digest_0.6.10     
+##  [7] lme4_1.1-12        tibble_1.2         evaluate_0.9      
+## [10] nlme_3.1-128       gtable_0.2.0       mgcv_1.8-12       
+## [13] DBI_0.5-1          SparseM_1.7        stringr_1.0.0     
+## [16] RevoUtils_10.0.1   MatrixModels_0.4-1 stats4_3.3.1      
+## [19] grid_3.3.1         nnet_7.3-12        data.table_1.9.6  
+## [22] R6_2.2.0           minqa_1.2.4        car_2.1-3         
+## [25] magrittr_1.5       htmltools_0.3.5    scales_0.4.0      
+## [28] codetools_0.2-14   MASS_7.3-45        splines_3.3.1     
+## [31] assertthat_0.1     pbkrtest_0.4-6     colorspace_1.2-6  
+## [34] labeling_0.3       quantreg_5.26      stringi_1.1.1     
+## [37] lazyeval_0.2.0     munsell_0.4.3      chron_2.3-47
 ```
 
 ```r
@@ -669,9 +670,9 @@ Use the mean absolute error as the prediction metric.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = FALSE)
+                     allowParallel = FALSE,
                      # allowParallel = TRUE,
-                     # summaryFunction = summaryMAE)
+                     summaryFunction = summaryMAE)
 ```
 
 Set the model.
@@ -701,11 +702,11 @@ Fit model over the tuning parameters.
 trainingModel <- train(loss ~ .,
                        data = train,
                        method = method,
-                       trControl = ctrl)
-                       # trControl = ctrl,
+                       # trControl = ctrl)
+                       trControl = ctrl,
                        # tuneGrid = grid,
-                       # metric = "MAE",
-                       # maximize = FALSE)
+                       metric = "MAE",
+                       maximize = FALSE)
 # stopCluster(cl)
 ```
 
@@ -727,39 +728,39 @@ trainingModel
 ## Summary of sample sizes: 8472, 8474, 8474, 8472, 8474, 8473, ... 
 ## Resampling results across tuning parameters:
 ## 
-##   lambda  alpha  nrounds  RMSE      Rsquared 
-##   0e+00   0e+00   50      2170.082  0.4149864
-##   0e+00   0e+00  100      2199.262  0.4054420
-##   0e+00   0e+00  150      2217.139  0.3990024
-##   0e+00   1e-04   50      2170.082  0.4149864
-##   0e+00   1e-04  100      2199.262  0.4054421
-##   0e+00   1e-04  150      2217.139  0.3990024
-##   0e+00   1e-01   50      2168.130  0.4158369
-##   0e+00   1e-01  100      2196.059  0.4065007
-##   0e+00   1e-01  150      2211.382  0.4013854
-##   1e-04   0e+00   50      2176.948  0.4117148
-##   1e-04   0e+00  100      2205.529  0.4022851
-##   1e-04   0e+00  150      2222.410  0.3965060
-##   1e-04   1e-04   50      2176.948  0.4117149
-##   1e-04   1e-04  100      2205.529  0.4022852
-##   1e-04   1e-04  150      2222.410  0.3965060
-##   1e-04   1e-01   50      2185.360  0.4073388
-##   1e-04   1e-01  100      2212.710  0.3986611
-##   1e-04   1e-01  150      2233.345  0.3912686
-##   1e-01   0e+00   50      2155.769  0.4240394
-##   1e-01   0e+00  100      2183.540  0.4137412
-##   1e-01   0e+00  150      2204.096  0.4060838
-##   1e-01   1e-04   50      2155.769  0.4240394
-##   1e-01   1e-04  100      2183.540  0.4137412
-##   1e-01   1e-04  150      2204.096  0.4060838
-##   1e-01   1e-01   50      2156.115  0.4238565
-##   1e-01   1e-01  100      2182.257  0.4142302
-##   1e-01   1e-01  150      2206.898  0.4045629
+##   lambda  alpha  nrounds  MAE     
+##   0e+00   0e+00   50      1370.375
+##   0e+00   0e+00  100      1396.114
+##   0e+00   0e+00  150      1413.766
+##   0e+00   1e-04   50      1370.375
+##   0e+00   1e-04  100      1396.114
+##   0e+00   1e-04  150      1413.766
+##   0e+00   1e-01   50      1368.849
+##   0e+00   1e-01  100      1392.439
+##   0e+00   1e-01  150      1411.203
+##   1e-04   0e+00   50      1374.607
+##   1e-04   0e+00  100      1401.200
+##   1e-04   0e+00  150      1417.747
+##   1e-04   1e-04   50      1374.607
+##   1e-04   1e-04  100      1401.200
+##   1e-04   1e-04  150      1417.747
+##   1e-04   1e-01   50      1377.685
+##   1e-04   1e-01  100      1406.928
+##   1e-04   1e-01  150      1426.880
+##   1e-01   0e+00   50      1365.107
+##   1e-01   0e+00  100      1390.023
+##   1e-01   0e+00  150      1411.110
+##   1e-01   1e-04   50      1365.107
+##   1e-01   1e-04  100      1390.023
+##   1e-01   1e-04  150      1411.110
+##   1e-01   1e-01   50      1364.953
+##   1e-01   1e-01  100      1386.924
+##   1e-01   1e-01  150      1410.802
 ## 
 ## Tuning parameter 'eta' was held constant at a value of 0.3
-## RMSE was used to select the optimal model using  the smallest value.
+## MAE was used to select the optimal model using  the smallest value.
 ## The final values used for the model were nrounds = 50, lambda = 0.1,
-##  alpha = 1e-04 and eta = 0.3.
+##  alpha = 0.1 and eta = 0.3.
 ```
 
 ```r
@@ -778,9 +779,9 @@ cor(hat[, c("loss", "hat")])
 ```
 
 ```
-##           loss       hat
-## loss 1.0000000 0.8969085
-## hat  0.8969085 1.0000000
+##          loss      hat
+## loss 1.000000 0.896908
+## hat  0.896908 1.000000
 ```
 
 ```r
@@ -788,8 +789,8 @@ postResample(hat$hat, hat$loss)
 ```
 
 ```
-##         RMSE     Rsquared 
-## 1272.5208356    0.8044448
+##        RMSE    Rsquared 
+## 1272.524066    0.804444
 ```
 
 ```r
@@ -797,7 +798,7 @@ mae(hat$hat, hat$loss)
 ```
 
 ```
-## [1] 918.4198
+## [1] 918.4227
 ```
 
 ```r
@@ -831,7 +832,7 @@ varImp(trainingModel)
 ##          Overall
 ## cat80_B  100.000
 ## cont7     22.048
-## cont2     18.440
+## cont2     18.439
 ## cat12_A   14.298
 ## cont11     9.393
 ## cont14     8.718
@@ -848,7 +849,7 @@ varImp(trainingModel)
 ## cont5      3.049
 ## cat5_A     2.959
 ## cat23_A    2.939
-## cont10     2.913
+## cont10     2.912
 ```
 
 ```r
@@ -857,7 +858,7 @@ trainingModel$finalModel
 
 ```
 ## $handle
-## <pointer: 0x000000000271df40>
+## <pointer: 0x000000000271e0e0>
 ## attr(,"class")
 ## [1] "xgb.Booster.handle"
 ## 
@@ -1010,7 +1011,7 @@ trainingModel$finalModel
 ## 
 ## $tuneValue
 ##    nrounds lambda alpha eta
-## 22      50    0.1 1e-04 0.3
+## 25      50    0.1   0.1 0.3
 ## 
 ## $obsLevels
 ## [1] NA
@@ -1053,11 +1054,11 @@ head(hat)
 
 ```
 ##    id     loss
-## 1 361 3069.069
-## 2 407 7672.882
-## 3 455 2337.791
-## 4 467 1715.355
-## 5 532 2871.474
+## 1 361 3069.070
+## 2 407 7672.858
+## 3 455 2337.792
+## 4 467 1715.350
+## 5 532 2871.482
 ## 6 581 3321.212
 ```
 
@@ -1070,7 +1071,7 @@ summary(hat$loss)
 
 ```
 ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-##    52.45  1625.00  2400.00  3034.00  3835.00 32960.00
+##    52.48  1625.00  2400.00  3034.00  3835.00 32960.00
 ```
 
 ```r
@@ -1092,7 +1093,7 @@ file.info("../data/processed/submission.csv")
 
 ```
 ##                                    size isdir mode               mtime
-## ../data/processed/submission.csv 152395 FALSE  666 2016-10-28 10:34:44
+## ../data/processed/submission.csv 152519 FALSE  666 2016-10-28 11:26:17
 ##                                                ctime               atime
 ## ../data/processed/submission.csv 2016-10-27 15:16:18 2016-10-27 15:32:38
 ##                                  exe
