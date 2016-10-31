@@ -8,13 +8,13 @@ setwd("~/Projects/Kaggle/AllstateClaimsSeverity/scripts")
 
 Load libraries.
 
-```{r, include = FALSE, messages = FALSE}
+```{r}
 library(plyr)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
 library(caret)
-library(gbm)
+library(xgboost)
 library(parallel)
 library(doParallel)
 ```

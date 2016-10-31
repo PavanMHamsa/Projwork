@@ -7,6 +7,7 @@ hat <-
   test %>%
   transform(loss = predict(trainingModel, test)) %>%
   select(matches("id|loss"))
+dim(hat)
 str(hat)
 head(hat)
 ```
@@ -24,6 +25,7 @@ ggplot(hat, aes(x = loss)) +
 Save the predictions to file.
 
 ```{r}
+options(scipen = 10)
 write.csv(hat, file = "../data/processed/submission.csv", row.names = FALSE)
 file.info("../data/processed/submission.csv")
 ```

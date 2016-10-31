@@ -1,6 +1,6 @@
 ---
 title: "Kaggle: Allstate Claims Severity"
-date: "2016-10-27 13:30:08"
+date: "2016-10-31 13:28:22"
 author: Benjamin Chan (benjamin.ks.chan@gmail.com)
 output:
   html_document:
@@ -22,6 +22,72 @@ setwd("~/Projects/Kaggle/AllstateClaimsSeverity/scripts")
 Load libraries.
 
 
+```r
+library(plyr)
+library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:plyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+library(reshape2)
+library(ggplot2)
+library(caret)
+```
+
+```
+## Loading required package: lattice
+```
+
+```r
+library(xgboost)
+```
+
+```
+## 
+## Attaching package: 'xgboost'
+```
+
+```
+## The following object is masked from 'package:dplyr':
+## 
+##     slice
+```
+
+```r
+library(parallel)
+library(doParallel)
+```
+
+```
+## Loading required package: foreach
+```
+
+```
+## Loading required package: iterators
+```
 
 Reproducibility steps.
 
@@ -44,15 +110,14 @@ sessionInfo()
 ## [11] LC_MEASUREMENT=en_US.iso885915 LC_IDENTIFICATION=C           
 ## 
 ## attached base packages:
-## [1] parallel  splines   stats     graphics  grDevices utils     datasets 
-## [8] base     
+## [1] parallel  stats     graphics  grDevices utils     datasets  base     
 ## 
 ## other attached packages:
 ##  [1] doParallel_1.0.10 iterators_1.0.8   foreach_1.4.3    
-##  [4] gbm_2.1.1         survival_2.39-5   caret_6.0-71     
-##  [7] lattice_0.20-34   ggplot2_2.1.0     reshape2_1.4.1   
-## [10] dplyr_0.5.0       plyr_1.8.4        rmarkdown_1.0    
-## [13] knitr_1.14        checkpoint_0.3.16
+##  [4] xgboost_0.4-4     caret_6.0-71      lattice_0.20-34  
+##  [7] ggplot2_2.1.0     reshape2_1.4.1    dplyr_0.5.0      
+## [10] plyr_1.8.4        rmarkdown_1.0     knitr_1.14       
+## [13] checkpoint_0.3.16
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] Rcpp_0.12.7        formatR_1.4        nloptr_1.0.4      
@@ -61,12 +126,13 @@ sessionInfo()
 ## [10] gtable_0.2.0       nlme_3.1-128       mgcv_1.8-15       
 ## [13] Matrix_1.2-7.1     DBI_0.5-1          SparseM_1.72      
 ## [16] stringr_1.1.0      MatrixModels_0.4-1 stats4_3.3.1      
-## [19] grid_3.3.1         nnet_7.3-12        R6_2.1.3          
-## [22] minqa_1.2.4        car_2.1-3          magrittr_1.5      
-## [25] scales_0.4.0       codetools_0.2-14   htmltools_0.3.5   
-## [28] MASS_7.3-45        assertthat_0.1     pbkrtest_0.4-6    
-## [31] colorspace_1.2-6   quantreg_5.29      stringi_1.1.1     
-## [34] munsell_0.4.3
+## [19] grid_3.3.1         nnet_7.3-12        data.table_1.9.6  
+## [22] R6_2.1.3           minqa_1.2.4        car_2.1-3         
+## [25] magrittr_1.5       scales_0.4.0       codetools_0.2-14  
+## [28] htmltools_0.3.5    MASS_7.3-45        splines_3.3.1     
+## [31] assertthat_0.1     pbkrtest_0.4-6     colorspace_1.2-6  
+## [34] quantreg_5.29      stringi_1.1.1      munsell_0.4.3     
+## [37] chron_2.3-47
 ```
 
 ```r
@@ -649,7 +715,7 @@ Use the mean absolute error as the prediction metric.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = TRUE,
+                     allowParallel = FALSE,
                      summaryFunction = summaryMAE)
 ```
 
@@ -657,58 +723,34 @@ Set the model.
 
 
 ```r
-method <- "gbm"
+method <- "xgbLinear"
 ```
 
-Set the tuning grid for model gbm.
+Set the tuning grid for model xgbLinear.
 
 
 ```r
-grid <- expand.grid(interaction.depth = 3:5,
-                    n.trees = seq(50, 150, 50),
-                    shrinkage = 0.1,
-                    n.minobsinnode = 10)
+# grid <- expand.grid(interaction.depth = 3:5,
+#                     n.trees = seq(50, 150, 50),
+#                     shrinkage = 0.1,
+#                     n.minobsinnode = 10)
 ```
 
 Fit model over the tuning parameters.
 
 
 ```r
-cl <- makeCluster(10)
-registerDoParallel(cl)
+# cl <- makeCluster(10)
+# registerDoParallel(cl)
 trainingModel <- train(loss ~ .,
                        data = train,
                        method = method,
+                       nthread = 5,
                        trControl = ctrl,
-                       tuneGrid = grid,
+#                        tuneGrid = grid,
                        metric = "MAE",
                        maximize = FALSE)
-```
-
-```
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1  7945640.0269            -nan     0.1000 482314.0805
-##      2  7545046.8138            -nan     0.1000 402342.5223
-##      3  7211933.4177            -nan     0.1000 328017.5925
-##      4  6933602.2386            -nan     0.1000 266404.0964
-##      5  6702871.6464            -nan     0.1000 227861.2267
-##      6  6500092.1714            -nan     0.1000 196878.3118
-##      7  6330339.5786            -nan     0.1000 168619.0660
-##      8  6195355.1120            -nan     0.1000 136035.0099
-##      9  6070431.2101            -nan     0.1000 124690.1338
-##     10  5963572.6978            -nan     0.1000 101805.9363
-##     20  5296324.8697            -nan     0.1000 38669.7523
-##     40  4715730.9440            -nan     0.1000 22502.8876
-##     60  4468669.4378            -nan     0.1000 7684.4094
-##     80  4329993.7615            -nan     0.1000 3423.3898
-##    100  4244655.9323            -nan     0.1000 2264.3168
-##    120  4189626.8431            -nan     0.1000 -923.7388
-##    140  4143708.9825            -nan     0.1000 -319.8392
-##    150  4120326.3026            -nan     0.1000 -793.0167
-```
-
-```r
-stopCluster(cl)
+# stopCluster(cl)
 ```
 
 Evaluate the model on the training dataset.
@@ -719,7 +761,7 @@ trainingModel
 ```
 
 ```
-## Stochastic Gradient Boosting 
+## eXtreme Gradient Boosting 
 ## 
 ## 188318 samples
 ##    473 predictor
@@ -729,23 +771,39 @@ trainingModel
 ## Summary of sample sizes: 169486, 169486, 169486, 169486, 169487, 169486, ... 
 ## Resampling results across tuning parameters:
 ## 
-##   interaction.depth  n.trees  MAE     
-##   3                   50      1421.848
-##   3                  100      1351.472
-##   3                  150      1327.494
-##   4                   50      1397.100
-##   4                  100      1334.146
-##   4                  150      1314.466
-##   5                   50      1379.696
-##   5                  100      1321.918
-##   5                  150      1305.821
+##   lambda  alpha  nrounds  MAE     
+##   0e+00   0e+00   50      1269.221
+##   0e+00   0e+00  100      1266.962
+##   0e+00   0e+00  150      1268.638
+##   0e+00   1e-04   50      1269.221
+##   0e+00   1e-04  100      1266.962
+##   0e+00   1e-04  150      1268.638
+##   0e+00   1e-01   50      1269.216
+##   0e+00   1e-01  100      1266.839
+##   0e+00   1e-01  150      1268.161
+##   1e-04   0e+00   50      1269.051
+##   1e-04   0e+00  100      1266.917
+##   1e-04   0e+00  150      1268.153
+##   1e-04   1e-04   50      1269.051
+##   1e-04   1e-04  100      1266.917
+##   1e-04   1e-04  150      1268.153
+##   1e-04   1e-01   50      1269.051
+##   1e-04   1e-01  100      1266.906
+##   1e-04   1e-01  150      1267.761
+##   1e-01   0e+00   50      1267.370
+##   1e-01   0e+00  100      1265.688
+##   1e-01   0e+00  150      1267.463
+##   1e-01   1e-04   50      1267.370
+##   1e-01   1e-04  100      1265.688
+##   1e-01   1e-04  150      1267.463
+##   1e-01   1e-01   50      1267.352
+##   1e-01   1e-01  100      1265.263
+##   1e-01   1e-01  150      1266.945
 ## 
-## Tuning parameter 'shrinkage' was held constant at a value of 0.1
-## 
-## Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+## Tuning parameter 'eta' was held constant at a value of 0.3
 ## MAE was used to select the optimal model using  the smallest value.
-## The final values used for the model were n.trees = 150,
-##  interaction.depth = 5, shrinkage = 0.1 and n.minobsinnode = 10.
+## The final values used for the model were nrounds = 100, lambda =
+##  0.1, alpha = 0.1 and eta = 0.3.
 ```
 
 ```r
@@ -765,8 +823,8 @@ cor(hat[, c("loss", "hat")])
 
 ```
 ##           loss       hat
-## loss 1.0000000 0.7164767
-## hat  0.7164767 1.0000000
+## loss 1.0000000 0.7964906
+## hat  0.7964906 1.0000000
 ```
 
 ```r
@@ -775,7 +833,7 @@ postResample(hat$hat, hat$loss)
 
 ```
 ##         RMSE     Rsquared 
-## 2029.8586903    0.5133389
+## 1759.0691769    0.6343973
 ```
 
 ```r
@@ -783,7 +841,7 @@ mae(hat$hat, hat$loss)
 ```
 
 ```
-## [1] 1298.343
+## [1] 1175.391
 ```
 
 ```r
@@ -805,7 +863,7 @@ ggplot(hat, aes(x = loss, y = hat)) +
 ```
 
 ```
-## Warning: Removed 2 rows containing non-finite values (stat_density2d).
+## Warning: Removed 1 rows containing non-finite values (stat_density2d).
 ```
 
 ![plot of chunk densityTraining](../figures/densityTraining-1.png)
@@ -818,41 +876,35 @@ varImp(trainingModel)
 ```
 
 ```
-## gbm variable importance
+## xgbLinear variable importance
 ## 
-##   only 20 most important variables shown (out of 473)
+##   only 20 most important variables shown (out of 341)
 ## 
 ##          Overall
 ## cat80_B  100.000
-## cont7     40.820
-## cont2     19.516
-## cat12_A   16.037
-## cat87_B   14.494
-## cat81_B    7.266
-## cont11     7.200
-## cat10_A    4.245
-## cont14     3.514
-## cat53_A    3.403
-## cat100_I   2.824
-## cat100_G   2.647
-## cat1_A     2.538
-## cat81_C    2.528
-## cont3      2.312
-## cat11_A    2.119
-## cat4_A     2.094
-## cat44_A    2.076
-## cat38_A    2.036
-## cat13_A    1.792
+## cont7     29.983
+## cont2     20.768
+## cat12_A   15.179
+## cat87_B    8.444
+## cont11     6.762
+## cat81_B    6.540
+## cont14     5.049
+## cat113_U   4.277
+## cat1_A     3.878
+## cat10_A    3.475
+## cat53_A    3.045
+## cat100_I   2.884
+## cont3      2.749
+## id         2.442
+## cat100_G   2.335
+## cat2_A     2.311
+## cat81_C    2.104
+## cat4_A     1.960
+## cat5_A     1.907
 ```
 
 ```r
-trainingModel$finalModel
-```
-
-```
-## A gradient boosted model with gaussian loss function.
-## 150 iterations were performed.
-## There were 473 predictors of which 99 had non-zero influence.
+# trainingModel$finalModel  # Produces a ton of output
 ```
 
 Save the artifacts to file.
@@ -874,13 +926,21 @@ hat <-
   test %>%
   transform(loss = predict(trainingModel, test)) %>%
   select(matches("id|loss"))
+dim(hat)
+```
+
+```
+## [1] 125546      2
+```
+
+```r
 str(hat)
 ```
 
 ```
 ## 'data.frame':	125546 obs. of  2 variables:
 ##  $ id  : num  4 6 9 12 15 17 21 28 32 43 ...
-##  $ loss: num  1657 2194 8245 6057 1081 ...
+##  $ loss: num  1940 4593 7238 6410 778 ...
 ```
 
 ```r
@@ -888,13 +948,13 @@ head(hat)
 ```
 
 ```
-##   id     loss
-## 1  4 1656.566
-## 2  6 2193.858
-## 3  9 8244.872
-## 4 12 6057.080
-## 5 15 1081.191
-## 6 17 2520.387
+##   id      loss
+## 1  4 1940.4010
+## 2  6 4593.4849
+## 3  9 7238.3052
+## 4 12 6409.6646
+## 5 15  777.7134
+## 6 17 2685.6921
 ```
 
 Plot the density of the predicted `loss` variable.
@@ -906,7 +966,7 @@ summary(hat$loss)
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   -2460    1721    2448    3029    3790   59640
+##  -187.4  1634.0  2380.0  3032.0  3770.0 84800.0
 ```
 
 ```r
@@ -921,7 +981,7 @@ ggplot(hat, aes(x = loss)) +
 ```
 
 ```
-## Warning: Removed 2 rows containing non-finite values (stat_density).
+## Warning: Removed 4 rows containing non-finite values (stat_density).
 ```
 
 ![plot of chunk densityLossTest](../figures/densityLossTest-1.png)
@@ -930,15 +990,16 @@ Save the predictions to file.
 
 
 ```r
+options(scipen = 10)
 write.csv(hat, file = "../data/processed/submission.csv", row.names = FALSE)
 file.info("../data/processed/submission.csv")
 ```
 
 ```
 ##                                     size isdir mode               mtime
-## ../data/processed/submission.csv 2975242 FALSE  644 2016-10-27 15:03:28
+## ../data/processed/submission.csv 2923197 FALSE  644 2016-10-31 15:26:34
 ##                                                ctime               atime
-## ../data/processed/submission.csv 2016-10-27 15:03:28 2016-10-26 18:31:45
+## ../data/processed/submission.csv 2016-10-31 15:26:34 2016-10-27 15:44:25
 ##                                   uid  gid uname   grname
 ## ../data/processed/submission.csv 4051 3010 chanb HPCUsers
 ```

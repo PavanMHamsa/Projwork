@@ -7,38 +7,39 @@ Use the mean absolute error as the prediction metric.
 ctrl <- trainControl(method = "cv",
                      number = 10,
                      savePredictions = TRUE,
-                     allowParallel = TRUE,
+                     allowParallel = FALSE,
                      summaryFunction = summaryMAE)
 ```
 
 Set the model.
 
 ```{r}
-method <- "gbm"
+method <- "xgbLinear"
 ```
 
 Set the tuning grid for model `r method`.
 
-```{r}
-grid <- expand.grid(interaction.depth = 3:5,
-                    n.trees = seq(50, 150, 50),
-                    shrinkage = 0.1,
-                    n.minobsinnode = 10)
+```{r, eval = FALSE}
+# grid <- expand.grid(interaction.depth = 3:5,
+#                     n.trees = seq(50, 150, 50),
+#                     shrinkage = 0.1,
+#                     n.minobsinnode = 10)
 ```
 
 Fit model over the tuning parameters.
 
 ```{r}
-cl <- makeCluster(10)
-registerDoParallel(cl)
+# cl <- makeCluster(10)
+# registerDoParallel(cl)
 trainingModel <- train(loss ~ .,
                        data = train,
                        method = method,
+                       nthread = 5,
                        trControl = ctrl,
-                       tuneGrid = grid,
+#                        tuneGrid = grid,
                        metric = "MAE",
                        maximize = FALSE)
-stopCluster(cl)
+# stopCluster(cl)
 ```
 
 Evaluate the model on the training dataset.
@@ -73,7 +74,7 @@ Display the final model.
 
 ```{r}
 varImp(trainingModel)
-trainingModel$finalModel
+# trainingModel$finalModel  # Produces a ton of output
 ```
 
 Save the artifacts to file.
