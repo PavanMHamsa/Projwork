@@ -1,6 +1,6 @@
 ---
 title: "Kaggle: Allstate Claims Severity"
-date: "2016-10-31 13:28:22"
+date: "2016-11-01 08:44:32"
 author: Benjamin Chan (benjamin.ks.chan@gmail.com)
 output:
   html_document:
@@ -723,10 +723,10 @@ Set the model.
 
 
 ```r
-method <- "xgbLinear"
+method <- "xgbTree"
 ```
 
-Set the tuning grid for model xgbLinear.
+Set the tuning grid for model xgbTree.
 
 
 ```r
@@ -771,39 +771,50 @@ trainingModel
 ## Summary of sample sizes: 169486, 169486, 169486, 169486, 169487, 169486, ... 
 ## Resampling results across tuning parameters:
 ## 
-##   lambda  alpha  nrounds  MAE     
-##   0e+00   0e+00   50      1269.221
-##   0e+00   0e+00  100      1266.962
-##   0e+00   0e+00  150      1268.638
-##   0e+00   1e-04   50      1269.221
-##   0e+00   1e-04  100      1266.962
-##   0e+00   1e-04  150      1268.638
-##   0e+00   1e-01   50      1269.216
-##   0e+00   1e-01  100      1266.839
-##   0e+00   1e-01  150      1268.161
-##   1e-04   0e+00   50      1269.051
-##   1e-04   0e+00  100      1266.917
-##   1e-04   0e+00  150      1268.153
-##   1e-04   1e-04   50      1269.051
-##   1e-04   1e-04  100      1266.917
-##   1e-04   1e-04  150      1268.153
-##   1e-04   1e-01   50      1269.051
-##   1e-04   1e-01  100      1266.906
-##   1e-04   1e-01  150      1267.761
-##   1e-01   0e+00   50      1267.370
-##   1e-01   0e+00  100      1265.688
-##   1e-01   0e+00  150      1267.463
-##   1e-01   1e-04   50      1267.370
-##   1e-01   1e-04  100      1265.688
-##   1e-01   1e-04  150      1267.463
-##   1e-01   1e-01   50      1267.352
-##   1e-01   1e-01  100      1265.263
-##   1e-01   1e-01  150      1266.945
+##   eta  max_depth  colsample_bytree  nrounds  MAE     
+##   0.3  1          0.6                50      1428.741
+##   0.3  1          0.6               100      1389.612
+##   0.3  1          0.6               150      1380.076
+##   0.3  1          0.8                50      1429.783
+##   0.3  1          0.8               100      1390.308
+##   0.3  1          0.8               150      1380.903
+##   0.3  2          0.6                50      1335.439
+##   0.3  2          0.6               100      1311.713
+##   0.3  2          0.6               150      1304.007
+##   0.3  2          0.8                50      1334.403
+##   0.3  2          0.8               100      1310.578
+##   0.3  2          0.8               150      1303.649
+##   0.3  3          0.6                50      1303.701
+##   0.3  3          0.6               100      1285.997
+##   0.3  3          0.6               150      1278.821
+##   0.3  3          0.8                50      1301.649
+##   0.3  3          0.8               100      1286.128
+##   0.3  3          0.8               150      1279.514
+##   0.4  1          0.6                50      1409.259
+##   0.4  1          0.6               100      1384.063
+##   0.4  1          0.6               150      1377.792
+##   0.4  1          0.8                50      1407.726
+##   0.4  1          0.8               100      1383.520
+##   0.4  1          0.8               150      1378.088
+##   0.4  2          0.6                50      1327.319
+##   0.4  2          0.6               100      1309.261
+##   0.4  2          0.6               150      1301.356
+##   0.4  2          0.8                50      1325.037
+##   0.4  2          0.8               100      1309.027
+##   0.4  2          0.8               150      1301.966
+##   0.4  3          0.6                50      1301.881
+##   0.4  3          0.6               100      1287.422
+##   0.4  3          0.6               150      1281.457
+##   0.4  3          0.8                50      1300.226
+##   0.4  3          0.8               100      1286.651
+##   0.4  3          0.8               150      1279.860
 ## 
-## Tuning parameter 'eta' was held constant at a value of 0.3
+## Tuning parameter 'gamma' was held constant at a value of 0
+## 
+## Tuning parameter 'min_child_weight' was held constant at a value of 1
 ## MAE was used to select the optimal model using  the smallest value.
-## The final values used for the model were nrounds = 100, lambda =
-##  0.1, alpha = 0.1 and eta = 0.3.
+## The final values used for the model were nrounds = 150, max_depth = 3,
+##  eta = 0.3, gamma = 0, colsample_bytree = 0.6 and min_child_weight = 1.
 ```
 
 ```r
@@ -823,8 +834,8 @@ cor(hat[, c("loss", "hat")])
 
 ```
 ##           loss       hat
-## loss 1.0000000 0.7964906
-## hat  0.7964906 1.0000000
+## loss 1.0000000 0.7398666
+## hat  0.7398666 1.0000000
 ```
 
 ```r
@@ -833,7 +844,7 @@ postResample(hat$hat, hat$loss)
 
 ```
 ##         RMSE     Rsquared 
-## 1759.0691769    0.6343973
+## 1954.6115074    0.5474026
 ```
 
 ```r
@@ -841,7 +852,7 @@ mae(hat$hat, hat$loss)
 ```
 
 ```
-## [1] 1175.391
+## [1] 1263.329
 ```
 
 ```r
@@ -863,7 +874,7 @@ ggplot(hat, aes(x = loss, y = hat)) +
 ```
 
 ```
-## Warning: Removed 1 rows containing non-finite values (stat_density2d).
+## Warning: Removed 6 rows containing non-finite values (stat_density2d).
 ```
 
 ![plot of chunk densityTraining](../figures/densityTraining-1.png)
@@ -876,31 +887,31 @@ varImp(trainingModel)
 ```
 
 ```
-## xgbLinear variable importance
+## xgbTree variable importance
 ## 
-##   only 20 most important variables shown (out of 341)
+##   only 20 most important variables shown (out of 198)
 ## 
 ##          Overall
 ## cat80_B  100.000
-## cont7     29.983
-## cont2     20.768
-## cat12_A   15.179
-## cat87_B    8.444
-## cont11     6.762
-## cat81_B    6.540
-## cont14     5.049
-## cat113_U   4.277
-## cat1_A     3.878
-## cat10_A    3.475
-## cat53_A    3.045
-## cat100_I   2.884
-## cont3      2.749
-## id         2.442
-## cat100_G   2.335
-## cat2_A     2.311
-## cat81_C    2.104
-## cat4_A     1.960
-## cat5_A     1.907
+## cat12_A   35.892
+## cont7     35.423
+## cont2     19.237
+## cat10_A   17.680
+## cat87_C   15.182
+## cat81_B   15.113
+## cont11    11.876
+## cat87_B    9.241
+## cat1_A     6.351
+## cont14     5.046
+## cat113_U   4.988
+## cat13_A    4.491
+## cat53_A    4.455
+## cat94_D    4.153
+## cont3      3.967
+## cat100_G   3.289
+## cat100_I   3.282
+## cat5_A     3.230
+## cat94_B    3.046
 ```
 
 ```r
@@ -940,7 +951,7 @@ str(hat)
 ```
 ## 'data.frame':	125546 obs. of  2 variables:
 ##  $ id  : num  4 6 9 12 15 17 21 28 32 43 ...
-##  $ loss: num  1940 4593 7238 6410 778 ...
+##  $ loss: num  1709 1910 8674 5586 1098 ...
 ```
 
 ```r
@@ -948,13 +959,13 @@ head(hat)
 ```
 
 ```
-##   id      loss
-## 1  4 1940.4010
-## 2  6 4593.4849
-## 3  9 7238.3052
-## 4 12 6409.6646
-## 5 15  777.7134
-## 6 17 2685.6921
+##   id     loss
+## 1  4 1708.615
+## 2  6 1910.034
+## 3  9 8673.962
+## 4 12 5586.026
+## 5 15 1098.488
+## 6 17 2753.336
 ```
 
 Plot the density of the predicted `loss` variable.
@@ -966,7 +977,7 @@ summary(hat$loss)
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##  -187.4  1634.0  2380.0  3032.0  3770.0 84800.0
+##  -142.4  1652.0  2416.0  3030.0  3821.0 68340.0
 ```
 
 ```r
@@ -981,7 +992,7 @@ ggplot(hat, aes(x = loss)) +
 ```
 
 ```
-## Warning: Removed 4 rows containing non-finite values (stat_density).
+## Warning: Removed 5 rows containing non-finite values (stat_density).
 ```
 
 ![plot of chunk densityLossTest](../figures/densityLossTest-1.png)
@@ -997,9 +1008,9 @@ file.info("../data/processed/submission.csv")
 
 ```
 ##                                     size isdir mode               mtime
-## ../data/processed/submission.csv 2923197 FALSE  644 2016-10-31 15:26:34
+## ../data/processed/submission.csv 2923062 FALSE  644 2016-11-01 09:46:47
 ##                                                ctime               atime
-## ../data/processed/submission.csv 2016-10-31 15:26:34 2016-10-27 15:44:25
+## ../data/processed/submission.csv 2016-11-01 09:46:47 2016-11-01 09:16:21
 ##                                   uid  gid uname   grname
 ## ../data/processed/submission.csv 4051 3010 chanb HPCUsers
 ```
